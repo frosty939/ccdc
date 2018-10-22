@@ -1,35 +1,36 @@
 #!/bin/bash
 #=======================================================================================
 #=== DESCIPTION ========================================================================
-##saves current iptables settings
-##applies specified rules and config changes
-##pay no attention to obvious fuckups.. im sure i had a reason and didn't just derp >.>
+	## saves current iptables settings
+	## applies specified rules and config changes
+	## pay no attention to obvious fuckups.. im sure i had a reason and didn't just derp >.>
 ########################################################################################
 ########################################################################################
-#
-#*************** NEED TO DO/ADD ***********************
-# test non-ubuntu18.04
-# cry as you realize you have to redo everything for compatibility
-# sed configs and make necessary changes
-# add ipv6 support
-# error checking for wrong read entry
-# garbage collection for rules backups
-# clean up how the iptable rules get applied. still very slow..
-# add limits to port hits
-# add options to skip the prompts
-# install and configure fail2ban. probably should have done this first.. but meh
-# netmask on intIP (trying $(hostname - I)/24 adds a trailing space "x.x.x.x /24" and causes some weirdness
-# better exit info upon completion
-# figure out why iptables -L is so slow after adding the INPUT drop rule
-# find gateway and put it where it needs to be for allowing ntp
-# deal wiht fuckups caused by launching with sh instead of bash
-#******************************************************
-#
+	#
+	#*************** NEED TO DO/ADD ***********************
+	# test non-ubuntu18.04
+	# cry as you realize you have to redo everything for compatibility
+	# sed configs and make necessary changes
+	# add ipv6 support
+	# error checking for wrong read entry
+	# garbage collection for rules backups
+	# clean up how the iptable rules get applied. still very slow..
+	# add limits to port hits
+	# add options to skip the prompts
+	# install and configure fail2ban. probably should have done this first.. but meh
+	# netmask on intIP (trying $(hostname - I)/24 adds a trailing space "x.x.x.x /24" and causes some weirdness
+	# better exit info upon completion
+	# figure out why iptables -L is so slow after adding the INPUT drop rule
+	# find gateway and put it where it needs to be for allowing ntp
+	# deal wiht fuckups caused by launching with sh instead of bash
+	#******************************************************
+	#
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #
-#
+# If error, give up
+set -e
 ###########################################################################################
 #are you root? no? well, try again later
 ###########################################################################################
@@ -68,7 +69,7 @@ makeItSo() {
 #----------------------
 backupTheWorld() {
 	if [ ! -e /firewall/rules ]; then   #checking if /firewall/rules exists
-		mkdir -p /firewall/rules          #creating it
+		mkdir -p /firewall/rules        #creating it
 	fi
 		iptables-save > /firewall/rules/autoSaved--$(date +"YMD,%Y-%m-%d_%H-%M").rules
 	echo ""
@@ -79,13 +80,25 @@ backupTheWorld() {
 ###########################################################################################
 #selecting our server type so we know which rules to use
 ###########################################################################################
-#TS: if shit gets wonky, if you have mulTSle live interfaces, that is likely the cause.. working on it..
+#TS: if shit gets wonky, if you have multiple live interfaces, that is likely the cause.. working on it..
 #----------------------
 whatWeDoin() {
 	#### Empty ############################
 	empty()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
+			*mangle
+			:PREROUTING ACCEPT [0:0]
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*nat
+			:PREROUTING ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
 			*filter
 			:INPUT ACCEPT [0:0]
 			:FORWARD ACCEPT [0:0]
@@ -98,12 +111,35 @@ whatWeDoin() {
 	standard()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
+			*mangle
+			:PREROUTING ACCEPT [0:0]
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*nat
+			:PREROUTING ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
 			*filter
 			:INPUT DROP [0:0]
-			## allows ssh connections
-			-A INPUT -p tcp --dport 22 -j ACCEPT
 			## allows established connections
 			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+			### SSH Stuff ###
+			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
+			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
+			## If a packet attempting to establish an SSH connection comes, and it's the fourth packet to come from the same source in 300 seconds, just reject it with prejudice and stop thinking about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 300 --hitcount 4 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection packet comes in, and it's the third attempt from the same guy in 15 seconds, log it to the system log once, then immediately reject it and forget about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j LOG --log-prefix "SSH BRUTE FORCE "
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --update --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection has made it this far, ACCEPT it.
+			-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+			###########
+			## allow ping replies
+			-A INPUT -p icmp --icmp-type 8 -j ACCEPT
 			:FORWARD DROP [0:0]
 			:OUTPUT ACCEPT [0:0]
 			COMMIT
@@ -114,10 +150,31 @@ whatWeDoin() {
 	atk()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
+			*mangle
+			:PREROUTING ACCEPT [0:0]
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*nat
+			:PREROUTING ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
 			*filter
 			:INPUT DROP [0:0]
-			## allows ssh connections
-			#-A INPUT -p tcp --dport 22 -j ACCEPT
+			### SSH Stuff ###
+			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
+			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
+			## If a packet attempting to establish an SSH connection comes, and it's the fourth packet to come from the same source in 300 seconds, just reject it with prejudice and stop thinking about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 300 --hitcount 4 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection packet comes in, and it's the third attempt from the same guy in 15 seconds, log it to the system log once, then immediately reject it and forget about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j LOG --log-prefix "SSH BRUTE FORCE "
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --update --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection has made it this far, ACCEPT it.
+			-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+			######
 			## allows established connections
 			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 			:FORWARD DROP [0:0]
@@ -130,17 +187,38 @@ whatWeDoin() {
 	web()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
+			*mangle
+			:PREROUTING ACCEPT [0:0]
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*nat
+			:PREROUTING ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
 			*filter
 			:INPUT DROP [0:0]
-			## allows ssh connections
-			#-A INPUT -p tcp --dport 22 -j ACCEPT
+			## allows established connections
+			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+			### SSH Stuff
+			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
+			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
+			## If a packet attempting to establish an SSH connection comes, and its the fourth packet to come from the same source in 300 seconds, just reject it with prejudice and stop thinking about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 300 --hitcount 4 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection packet comes in, and its the third attempt from the same guy in 15 seconds, log it to the system log once, then immediately reject it and forget about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j LOG --log-prefix "SSH BRUTE FORCE "
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --update --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection has made it this far, ACCEPT it.
+			-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+			#########
 			## open http/https web server port
 			-A INPUT -p tcp --dport 80 -j ACCEPT
 			-A INPUT -p tcp --dport 443 -j ACCEPT
 			## allows ping replies
 			-A INPUT -p icmp --icmp-type 8 -j ACCEPT
-			## allows established connections
-			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 			## logs... something?
 			-A INPUT -m limit --limit 5/min -j LOG --log-prefix "FART-OVERLOAD " --log-level 7
 			:FORWARD DROP [0:0]
@@ -153,10 +231,31 @@ whatWeDoin() {
 	mail()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
+			*mangle
+			:PREROUTING ACCEPT [0:0]
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*nat
+			:PREROUTING ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
 			*filter
 			:INPUT DROP [0:0]
-			## allows ssh connections
-			#-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+			### SSH Stuff
+			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
+			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
+			## If a packet attempting to establish an SSH connection comes, and its the fourth packet to come from the same source in 300 seconds, just reject it with prejudice and stop thinking about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 300 --hitcount 4 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection packet comes in, and its the third attempt from the same guy in 15 seconds, log it to the system log once, then immediately reject it and forget about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j LOG --log-prefix "SSH BRUTE FORCE "
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --update --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection has made it this far, ACCEPT it.
+			-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+			#######
 			## allows smtp
 			-A INPUT -p tcp -m tcp --dport 25 -j ACCEPT
 			## allows imap
@@ -183,10 +282,31 @@ whatWeDoin() {
 		read -p "Allowed SOURCE for SSH connections[192.168.0.0/24]: " sshIP
 		: ${sshIP:="192.168.0.0/24"}
 		"cat" <<-EOF > /etc/iptables/rules.v4
+			*mangle
+			:PREROUTING ACCEPT [0:0]
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*nat
+			:PREROUTING ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
 			*filter
 			:INPUT DROP [0:0]
-			## allows ssh connections
-			-A INPUT -s $sshIP -p tcp --dport 22 -j ACCEPT
+			### SSH Stuff
+			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
+			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
+			## If a packet attempting to establish an SSH connection comes, and its the fourth packet to come from the same source in 300 seconds, just reject it with prejudice and stop thinking about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 300 --hitcount 4 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection packet comes in, and its the third attempt from the same guy in 15 seconds, log it to the system log once, then immediately reject it and forget about it.
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --rcheck --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j LOG --log-prefix "SSH BRUTE FORCE "
+			-A INPUT -p tcp -m tcp --dport 22 -m recent --update --seconds 15 --hitcount 3 --rttl --name SSH --rsource -j REJECT --reject-with tcp-reset
+			## If an SSH connection has made it this far, ACCEPT it.
+			-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+			#######
 			## allows ping replies
 			-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
 			## allows established connections
@@ -246,7 +366,12 @@ summary(){
 	printf "\n******************************************************************"
 	printf "\nHopefully everything went as planned.. Here is the current iptable"
 	printf "\n******************************************************************\n\n"
-	iptables -L
+	printf "##### Mangle #####\n"
+	iptables -L -n -t mangle
+	printf "\n\n##### NAT #####\n"
+	iptables -L -n -t nat
+	printf "\n\n##### Standard #####\n"
+	iptables -L -n
 }
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++

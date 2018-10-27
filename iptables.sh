@@ -21,7 +21,7 @@
 	# netmask on intIP (trying $(hostname - I)/24 adds a trailing space "x.x.x.x /24" and causes some weirdness
 	# better exit info upon completion
 	# figure out why iptables -L is so slow after adding the INPUT drop rule
-	# find gateway and put it where it needs to be for allowing ntp
+	# find gateway and put it where it needs to be for allowing proper ntp and dns
 	# deal wiht fuckups caused by launching with sh instead of bash
 	#******************************************************
 	#

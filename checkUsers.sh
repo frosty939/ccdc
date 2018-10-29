@@ -7,6 +7,8 @@
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# fix the things
+	# check /etc/shadow and make sure the proper accounts are locked still
+	# stop using tmp files. STOP IT!! use mktmp or sed variables
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

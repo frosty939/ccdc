@@ -25,11 +25,11 @@
 #----------------------
 sandman(){
 	#### PART 1 ############################
-	users=$(cat /etc/shadow | grep -oP "^.+?(?=:)" | sed "/$(whoami)/d" )
-
-	for i in ${users[*]}; do
-		passwd -l $i
-	done
+	users=$(cat /etc/shadow | grep -oP "^.+?(?=:)" | sed "/$(logname)/d" )
+    for i in ${users[*]}; do
+        command passwd -lq $i
+		command printf "\nDisabled Login for: $i"
+    done
 
 	}
 

@@ -10,36 +10,67 @@
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# clean this shit up
+	# figure out how to import lists of passwords without using plaintext..
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #
+#### global backup var ####
+backupDir=$HOME"/ccdc_backups/$(echo $(basename "$0") | sed 's/\.sh//')"
+###########################################################################################
 # If error, give up
-# set -e
+set -e
 ###########################################################################################
-#FUNCTION1 description
+#are you root? no? well, try again
 ###########################################################################################
-#TS: troubleshooting hint
-#----------------------
-sandman(){
-	#### PART 1 ############################
+neo() {
+	if [[ $EUID -ne 0  ]]; then
+	echo "you forgot to run as root again... "
+	echo "Current dir is "$(pwd)
+	exit 1
+	fi
+	}
+###########################################################################################
+# copies everything to the backupDir
+###########################################################################################
+antiFuckUp(){
+	# creating the dir if it doesn't exist
+	if [ ! -d $backupDir ]; then
+		command mkdir -p "$backupDir"
+	fi
+	# copying current states
+	command cp /etc/passwd $backupDir/passwd.bak
+	command cp /etc/shadow $backupDir/shadow.bak
+	}
+###########################################################################################
+# Locks all accounts except for the one you are on and makes you change password
+###########################################################################################
+jailer(){
+	# allow ctrl+c
+	trap "exit" INT
+	#### Locking accounts ############################
 	users=$(cat /etc/shadow | grep -oP "^.+?(?=:)" | sed "/$(logname)/d" )
     for i in ${users[*]}; do
         command passwd -lq $i
 		command printf "\nDisabled Login for: $i"
     done
-
+	#### Changing Password ############################
+	command printf "\n\n========== All Accounts Now Locked Except for: $(logname) ==========\n"
+	command printf "Changing [$(logname)'s] Password\n\n"
+	command passwd $(logname)
+	#### Announcing Backup Location ############################
+	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H-%M") ======\n"
 	}
 
 ###########################################################################################
-#FUNCTION2 description
+# zips it all up
 ###########################################################################################
-#TS: troubleshooting hint
-#----------------------
-function2(){
-	#### PART 1 ############################
+coldOutside(){
+	#### compressing ############################
+	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H-%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
+	command rm -rf $backupDir
 	}
 
 
@@ -47,7 +78,9 @@ function2(){
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 main(){
-	function1
-	function2
+	neo
+	antiFuckUp
+	jailer
+	coldOutside
 	}
 main

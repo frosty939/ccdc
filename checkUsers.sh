@@ -15,13 +15,11 @@
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #
-# global var setting $backupDir to ccdc_backups/SCRIPTNAME
+#### global backup var ####
 backupDir=$HOME"/ccdc_backups/$(echo $(basename "$0") | sed 's/\.sh//')"
 ###########################################################################################
 # builds the 2 files for diff to check and copies them to a backup archive
 ###########################################################################################
-#TS: troubleshooting hint
-#----------------------
 buildEmUp(){
 	defList="root daemon bin sys sync games man lp mail news uucp proxy www-data backup list irc gnats nobody systemd-network systemd-resolve syslog messagebus _apt lxd uuidd dnsmasq landscape pollinate sshd"
 	defListPath="$backupDir"/defList.bak""
@@ -40,31 +38,22 @@ buildEmUp(){
 	# creating backups
 	command cp /etc/passwd $backupDir/origPasswd.bak
 	}
-
 ###########################################################################################
 # comparing defined list and generated list
 ###########################################################################################
-#TS: troubleshooting hint
-#----------------------
 whoDat(){
 	#### comparing lists ############################
 	printf "\n----- Non-Standard Users on this Box -----\n"
 	command diff $defListPath $testListPath | grep ">"
 	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H-%M") ======\n"
 	}
-
 ###########################################################################################
 # zipping and removing old files
 ###########################################################################################
-#TS: troubleshooting hint
-#----------------------
 breakEmDown(){
 	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H-%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
 	command rm -rf $backupDir
 }
-
-
-
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

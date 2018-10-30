@@ -50,7 +50,7 @@ whoDat(){
 	#### comparing lists ############################
 	printf "\n----- Non-Standard Users on this Box -----\n"
 	command diff $defListPath $testListPath | grep ">"
-	printf "\n====== original files backed up to $backupDir--$(date +"y%Y-m%m-d%d_%H-%M") ======\n"
+	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H-%M") ======\n"
 	}
 
 ###########################################################################################
@@ -59,7 +59,7 @@ whoDat(){
 #TS: troubleshooting hint
 #----------------------
 breakEmDown(){
-	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"y%Y-m%m-d%d_%H-%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
+	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H-%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
 	command rm -rf $backupDir
 }
 

@@ -43,6 +43,8 @@ antiFuckUp(){
 	# copying current states
 	command cp /etc/passwd $backupDir/passwd.bak
 	command cp /etc/shadow $backupDir/shadow.bak
+	command cp /etc/shadow- $backupDir/shadow-.bak
+	command cp /etc/shadow.old $backupDir/shadow.old.bak
 	}
 ###########################################################################################
 # Locks all accounts except for the one you are on and makes you change password

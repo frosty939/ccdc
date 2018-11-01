@@ -2,12 +2,14 @@
 #=======================================================================================
 #=== DESCIPTION ========================================================================
 #=======================================================================================
-	## checks/installs my normal tools
+	## lists recently changed/made files
+	## lists recently changed/made directories
+	## filters out safe changes
 ########################################################################################
 ########################################################################################
 	#
 	#*************** NEED TO DO/ADD ***********************
-	# htop / atop / nethogs / ncdu / discus /
+	# columns, for readability
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -20,11 +22,16 @@
 #FUNCTION1 description
 ###########################################################################################
 function1(){
-	#### autojump install ############################
-	echo ". /usr/share/autojump/autojump.bash" >> ~/.bashrc
-	command chmod 755 /usr/share/autojump/autojump.bash
-	command source ~/.bashrc
-
+	#### PART 1 ############################
+	# files
+	find -type f -mtime -30 -exec ls -l {} \; > last30days.txt
+	# directories
+	find -type d -mtime -30 -exec ls -l {} \; > lastd30days.txt
+	### ignoring .git crap
+	# files
+	find -type f -mtime -30 -exec ls -l {} \; | sed '/\.git/d' > last30days.txt
+	# directories
+	find -type d -mtime -30 -exec ls -l {} \; | sed '/\.git/d' > lastd30days.txt
 	}
 ###########################################################################################
 #FUNCTION2 description

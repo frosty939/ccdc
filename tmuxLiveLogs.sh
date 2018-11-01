@@ -12,6 +12,16 @@
 	# decide which log files to keep track of..
 	# create tmux layout, naming scheme, etc
 	## w / who / who am i
+	#### GENERAL
+	##
+	#### NETWORK
+	## ss / netstat / vmstat
+	#### SYSTEM RESOURCES
+	##
+	#### DISKS
+	## dstat / discus
+	#### MEMORY
+	## vmstat / free
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

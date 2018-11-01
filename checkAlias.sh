@@ -8,7 +8,7 @@
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# need to "manually" check all $HOME/.bashrc    $HOME/.bash_profile    $HOME/.bash_aliases
-	# and check for anything in     /etc/profile    /etc/bashrc    /etc/profile.d
+	# and check for anything in   /etc/aliases  /etc/profile    /etc/bashrc    /etc/profile.d
 	# check any temporary aliases
 	# clean up syntax and what not
 	#******************************************************

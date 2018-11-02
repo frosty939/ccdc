@@ -27,6 +27,11 @@ buildEmUp(){
 	if [ ! -d $backupDir ]; then
 		command mkdir -p $backupDir
 	fi
+	#### copying current states ############################
+	command cp -a $HOME/.bashrc $backupDir/bashrc.bak
+	if [ -f $HOME/.bash_aliases ]; then
+		command cp -a $HOME/.bash_aliases $backupDir/bash_aliases.bak
+	fi
 	#### building files ############################
 	defList="alias ls='ls --color=auto' alias grep='grep --color=auto' alias fgrep='fgrep --color=auto' alias egrep='egrep --color=auto' alias ll='ls -alF' alias la='ls -A' alias l='ls -CF' alias alert='notify-send --urgency=low -i \"\$([ \$? = 0 ] && echo terminal || echo error)\" \"\$(history|tail -n1|sed -e '\\''s/^\\s*[0-9]\\+\\s*//;s/[;&|]\\s*alert\$//'\\'')\"'"
 	defListPath="$backupDir/defList.bak"
@@ -40,9 +45,9 @@ buildEmUp(){
 	command sed -i 's/alias/\n\nalias/g' $defListPath
 	command sed -i 's/alias/\n\nalias/g' $testListPath
 	#### copying current states ############################
-	command cp $HOME/.bashrc $backupDir/bashrc.bak
+	command cp -a $HOME/.bashrc $backupDir/bashrc.bak
 	if [ -f $HOME/.bash_aliases ]; then
-		command cp $HOME/.bash_aliases $backupDir/bash_aliases.bak
+		command cp -a $HOME/.bash_aliases $backupDir/bash_aliases.bak
 	fi
 	}
 ###########################################################################################

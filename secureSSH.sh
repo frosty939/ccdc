@@ -11,6 +11,8 @@
 	#*************** NEED TO DO/ADD ***********************
 	# all the stuff
 	# also things
+	# /etc/cloud/cloud.cfg
+	# /etc/ssh/sshd_config
 	# 
 	#******************************************************
 	#

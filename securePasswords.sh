@@ -10,7 +10,7 @@
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# clean this shit up
-	# figure out how to import lists of passwords without using plaintext..
+	# figure out how to import passwords without using plaintext..
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -50,21 +50,37 @@ antiFuckUp(){
 # Locks all accounts except for the one you are on and makes you change password
 ###########################################################################################
 jailer(){
-	# allow ctrl+c
-	trap "exit" INT
 	#### Locking accounts ############################
 	users=$(cat /etc/shadow | grep -oP "^.+?(?=:)" | sed "/$(logname)/d" )
     for i in ${users[*]}; do
         command passwd -lq $i
 		command printf "\nDisabled Login for: $i"
     done
-	#### Changing Password ############################
-	command printf "\n\n========== All Accounts Now Locked Except for: $(logname) ==========\n"
-	command printf "Changing [$(logname)'s] Password\n\n"
+	#### current account pw change ############################
+	command printf "\n\n========== All Accounts now have Randomized Passwords and are Locked Except for: $(logname) ==========\n"
+	command printf "\nChanging [$(logname)'s] Password\n"
 	command passwd $(logname)
 	#### Announcing Backup Location ############################
 	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H-%M") ======\n"
 	}
+###########################################################################################
+# generates random passwords for all accounts
+###########################################################################################
+madMixer(){
+	#### checks/installs pwgen ############################
+	if ! dpkg-query -W -f='${Status}' pwgen | grep -q "ok installed"; then
+		apt install pwgen -y
+		echo ""
+	fi
+	#### randomizes passwords ############################
+	for i in $(compgen -u); do
+        if [[ $i != $(logname) ]]; then
+			pass="$(pwgen 16 1)"
+			command echo -e "$pass\n$pass" | passwd $i
+			command echo -e "$pass\n$pass" > /dev/null
+        fi
+        done
+}
 ###########################################################################################
 # zips it all up
 ###########################################################################################
@@ -79,6 +95,7 @@ coldOutside(){
 main(){
 	neo
 	antiFuckUp
+	madMixer
 	jailer
 	coldOutside
 	}

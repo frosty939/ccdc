@@ -2,4 +2,4 @@
 
 
 ### global backupDir variable
-`backupDir=$HOME"/ccdc_backups/$(echo $(basename "$0") | sed 's/\.sh//')"`
+`backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"`

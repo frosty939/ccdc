@@ -11,6 +11,7 @@
 	#*************** NEED TO DO/ADD ***********************
 	# clean this shit up
 	# figure out how to import passwords without using plaintext..
+	# maybe dont backup the orig shadow file..?
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -18,7 +19,7 @@
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #
 #### global backup var ####
-backupDir=$HOME"/ccdc_backups/$(echo $(basename "$0") | sed 's/\.sh//')"
+backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"
 ###########################################################################################
 # If error, give up
 set -e
@@ -61,7 +62,7 @@ jailer(){
 	command printf "\nChanging [$(logname)'s] Password\n"
 	command passwd $(logname)
 	#### Announcing Backup Location ############################
-	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H-%M") ======\n"
+	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H%M") ======\n"
 	}
 ###########################################################################################
 # generates random passwords for all accounts
@@ -86,7 +87,7 @@ madMixer(){
 ###########################################################################################
 coldOutside(){
 	#### compressing ############################
-	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H-%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
+	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
 	command rm -rf $backupDir
 	}
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -16,6 +16,7 @@
 	##
 	#### NETWORK
 	## ss / netstat / vmstat
+	# netstat -tulpnac
 	#### SYSTEM RESOURCES
 	##
 	#### DISKS

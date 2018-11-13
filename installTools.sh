@@ -7,7 +7,16 @@
 ########################################################################################
 	#
 	#*************** NEED TO DO/ADD ***********************
-	# htop / atop / nethogs / ncdu / discus /
+	#### GENERAL
+	## glances / nmon / pstree
+	#### NETWORK
+	## ss / netstat / vmstat / jnettop / nethogs / bmon / iftop / nload
+	#### SYSTEM RESOURCES
+	## top / htop / atop
+	#### DISKS
+	## dstat / discus
+	#### MEMORY
+	## vmstat / free /##
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

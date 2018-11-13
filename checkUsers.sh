@@ -6,6 +6,7 @@
 ########################################################################################
 	#
 	#*************** NEED TO DO/ADD ***********************
+	# check sudoer file (/etc/sudoer   || visudo)
 	# fix the things
 	# check /etc/shadow and make sure the proper accounts are locked still
 	# stop using tmp files. STOP IT!! use mktmp or sed variables
@@ -16,7 +17,7 @@
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #
 #### global backup var ####
-backupDir=$HOME"/ccdc_backups/$(echo $(basename "$0") | sed 's/\.sh//')"
+backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"
 ###########################################################################################
 # builds the 2 files for diff to check and copies them to a backup archive
 ###########################################################################################
@@ -46,13 +47,13 @@ whoDat(){
 	#### comparing lists ############################
 	printf "\n----- Non-Standard Users on this Box -----\n"
 	command diff $defListPath $testListPath | grep ">"
-	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H-%M") ======\n"
+	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H%M") ======\n"
 	}
 ###########################################################################################
 # zipping and removing old files
 ###########################################################################################
 breakEmDown(){
-	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H-%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
+	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
 	command rm -rf $backupDir
 }
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -13,13 +13,15 @@
 	#*************** NEED TO DO/ADD ***********************
 	# if/then for ubuntu/debian and different check lists
 	# remove ppas and lists that are non-standard
+	# check distro
+	# add lists for each distro
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 # global backup dir
-backupDir=$HOME"/ccdc_backups/$(echo $(basename "$0") | sed 's/\.sh//')"
+backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"
 #backupDir=$HOME"/ccdc_backups/$(basename "$0" | sed 's/\.sh//')"
 ###########################################################################################
 #are you root? no? well, try again
@@ -56,7 +58,7 @@ seeker(){
 	# comparing lists
 	printf "\n------ Non-Standard Repos and PPAs ------\n"
 	diff <(echo $defList) <(echo $testList)
-	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H-%M") ======\n"
+	printf "\n====== original files backed up to $backupDir--$(date +"%Y-%m-%d_%H%M") ======\n"
 	}
 ###########################################################################################
 # removes any non-standard repos/ppas

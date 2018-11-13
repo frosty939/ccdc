@@ -71,10 +71,10 @@ backupTheWorld() {
 	if [ ! -e /firewall/rules ]; then   #checking if /firewall/rules exists
 		mkdir -p /firewall/rules        #creating it
 	fi
-		iptables-save > /firewall/rules/autoSaved--$(date +"YMD,%Y-%m-%d_%H-%M").rules
+		iptables-save > /firewall/rules/autoSaved--$(date +"YMD,%Y-%m-%d_%H%M").rules
 	echo ""
 	echo "========================================================================|"
-	echo "Saved current iptable to /firewall/rules/autosaved--$(date +"YMD,%Y-%m-%d_%H-%M")|"
+	echo "Saved current iptable to /firewall/rules/autosaved--$(date +"YMD,%Y-%m-%d_%H%M")|"
 	echo "========================================================================|"
 }
 ###########################################################################################

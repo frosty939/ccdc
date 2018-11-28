@@ -15,6 +15,7 @@
 	# remove ppas and lists that are non-standard
 	# check distro
 	# add lists for each distro
+	# get lists of offical repos IPs
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -28,10 +29,10 @@ backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"
 ###########################################################################################
 neo() {
 	if [[ $EUID -ne 0  ]]; then
-	printf "\nyou forgot to run as root again... "
-	printf "\nCurrent dir is "$(pwd)"\n\n"
-	exit 1
-	fi
+		printf "\nyou forgot to run as root again... "
+		printf "\nCurrent dir is "$(pwd)"\n\n"
+		exit 1
+		fi
 	}
 ###########################################################################################
 # compares to default repo list

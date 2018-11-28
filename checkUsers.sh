@@ -6,10 +6,23 @@
 ########################################################################################
 	#
 	#*************** NEED TO DO/ADD ***********************
+	# check /etc/profile (see what its doing when making a new profile)
 	# check sudoer file (/etc/sudoer   || visudo)
 	# fix the things
 	# check /etc/shadow and make sure the proper accounts are locked still
 	# stop using tmp files. STOP IT!! use mktmp or sed variables
+	# check /etc/skel  (responsible for creating stuff for new users)
+	# lslogins / last / lastb / lastlog
+	# delete iffy users and all files owned by them ( find / -user USER -delete)
+	##### FILES
+	# Group account information.			/etc/group
+	# Secure group account information.		/etc/gshadow
+	# Default values for account creation.	/etc/default/useradd
+	# Directory containing default files.	/etc/skel/
+	# Per user subordinate group IDs.		/etc/subgid
+	# Per user subordinate user IDs.		/etc/subuid
+	# Shadow password suite configuration.	/etc/login.defs
+
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

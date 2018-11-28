@@ -20,7 +20,15 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-#
+#######################
+function main(){	###
+	neo				###
+	meat			###
+	bones			###
+	brute			###
+	assassin		###
+}					###
+#######################
 #### Variables ####
 pwListFull="/usr/share/wordlists/rockyou.txt"
 userListUnix="/usr/share/wordlists/metasploit/unix_users.txt"
@@ -72,7 +80,7 @@ function bones(){
 ###########################################################################################
 function meat(){
 	# wanted app lists
-	command="hydra hashcat john nmap curl"
+	command="hydra hashcat john nmap curl net-tools"
 	installing=""
 
 		# checking if apps are installed
@@ -136,11 +144,5 @@ function assassin(){
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function main(){
-	neo
-	bones
-	meat
-	brute
-	assassin
-	}
+
 main

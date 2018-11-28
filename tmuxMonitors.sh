@@ -5,13 +5,13 @@
 	#### GENERAL
 	## glances / nmon
 	#### NETWORK
-	## ss / netstat / vmstat / jnettop / nethogs / bmon / iftop / nload
+	## ss / netstat / vnstat / iftop / nethogs / bmon / nload / jnettop
 	#### SYSTEM RESOURCES
 	## top / htop / atop
 	#### DISKS
 	## dstat / discus
 	#### MEMORY
-	## vmstat / free /##
+	## vmstat / free / smem
 	##
 	##
 ########################################################################################

@@ -13,7 +13,11 @@
 	# also things
 	# /etc/cloud/cloud.cfg
 	# /etc/ssh/sshd_config
+	# /etc/ssh/ssh_host_ecdsa_key.pub
 	# ~/.ssh/authorized_keys
+	# get list of ECDSA key fingerprints for your machines
+	# change ssh port
+	# check /etc/default/ssh
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +36,14 @@ function1(){
 #FUNCTION2 description
 ###########################################################################################
 function2(){
-	#### PART 1 ############################
+	# getting the host's ECDSA key fingerprint
+	for file in /etc/ssh/ssh_host_ecdsa_key.pub; do
+		command ssh-keygen -lf $file
+	done
+	# checking a target's ECDSA key fingerprint
+	read -p "Host or Domain you want to check: " target
+
+	command ssh -o VisualHostKey=yes -o FingerprintHas=sha256 $target
 	}
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -23,6 +23,7 @@
 	# figure out why iptables -L is so slow after adding the INPUT drop rule
 	# find gateway and put it where it needs to be for allowing proper ntp and dns
 	# deal wiht fuckups caused by launching with sh instead of bash
+	# have the first backup of each file be specially named, then tested for existence
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

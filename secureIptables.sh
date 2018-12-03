@@ -4,8 +4,8 @@
 	## saves current iptables settings
 	## applies specified rules and config changes
 	## pay no attention to obvious fuckups.. im sure i had a reason and didn't just derp >.>
-########################################################################################
-########################################################################################
+#=======================================================================================
+#=======================================================================================
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# test non-ubuntu18.04
@@ -29,15 +29,32 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-#
-# If error, give up
-set -e
+###### RUN function #######
+###########################
+function main() {		###
+	neo					###
+	makeItSo			###
+	backupTheWorld		###
+	whatWeDoin			###
+	summary				###
+}						###
+###########################
+#------ error handling ----------
+### If error, give up			#
+#set -e							#
+#- - - - - - - - - - - - - - - -#
+### if error, do THING			#
+# makes trap global 			#
+# (works in functions)			#
+#set -o errtrace				#
+# 'exit' can be a func or cmd	#
+#trap 'exit' ERR				#
+#--------------------------------
+backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
 ###########################################################################################
 #are you root? no? well, try again later
 ###########################################################################################
-#TS:
-#----------------------
-neo() {
+function neo() {
 	if [[ $EUID -ne 0  ]]; then
 	echo "you forgot to run as root again... "
 	echo "Current dir is "$(pwd)
@@ -47,9 +64,7 @@ neo() {
 ###########################################################################################
 #checking for, and installing, iptables/persistence/fail2ban
 ###########################################################################################
-#TS:
-#----------------------
-makeItSo() {
+function makeItSo() {
 	if ! dpkg-query -W -f='${Status}' iptables | grep -q "ok installed"; then
 		apt install iptables -y
 		echo ""
@@ -66,9 +81,7 @@ makeItSo() {
 ###########################################################################################
 #backing up whatever the current settings are
 ###########################################################################################
-#TS:
-#----------------------
-backupTheWorld() {
+function backupTheWorld() {
 	if [ ! -e /firewall/rules ]; then   #checking if /firewall/rules exists
 		mkdir -p /firewall/rules        #creating it
 	fi
@@ -83,9 +96,9 @@ backupTheWorld() {
 ###########################################################################################
 #TS: if shit gets wonky, if you have multiple live interfaces, that is likely the cause.. working on it..
 #----------------------
-whatWeDoin() {
+function whatWeDoin() {
 	#### Empty ############################
-	empty()
+	function empty()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
 			*mangle
@@ -109,7 +122,7 @@ whatWeDoin() {
 		"iptables-restore" /etc/iptables/rules.v4
 	}
 	#### Standard ############################
-	standard()
+	function standard()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
 			*mangle
@@ -148,7 +161,7 @@ whatWeDoin() {
 		"iptables-restore" /etc/iptables/rules.v4
 	}
 	#### Attacker ############################
-	atk()
+	function atk()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
 			*mangle
@@ -185,7 +198,7 @@ whatWeDoin() {
 		"iptables-restore" /etc/iptables/rules.v4
 	}
 	#### Website ############################
-	web()
+	function web()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
 			*mangle
@@ -229,7 +242,7 @@ whatWeDoin() {
 		"iptables-restore" /etc/iptables/rules.v4
 	}
 	#### Mail Server ############################
-	mail()
+	function mail()
 	{
 		"cat" <<-EOF > /etc/iptables/rules.v4
 			*mangle
@@ -276,7 +289,7 @@ whatWeDoin() {
 		"iptables-restore" /etc/iptables/rules.v4
 	}
 	#### Router ############################
-	router()
+	function router()
 	{
 		read -p "Mail Server IP: " mailIP
 		read -p "Web Server IP: " webIP
@@ -362,7 +375,7 @@ whatWeDoin() {
 	esac
 }
 
-summary(){
+function summary(){
 	printf "\n\n"
 	printf "\n******************************************************************"
 	printf "\nHopefully everything went as planned.. Here is the current iptable"
@@ -377,12 +390,5 @@ summary(){
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-main() {  #runs stuff, sometimes even in order
-	neo
-	makeItSo
-	backupTheWorld
-	whatWeDoin
-	summary
-	printf "\n\n"
-}
+
 main

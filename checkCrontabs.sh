@@ -5,8 +5,8 @@
 	## lists all cronjobs for all users
 	##
 	##
-########################################################################################
-########################################################################################
+#=======================================================================================
+#=======================================================================================
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# check atjobs				cat /var/spool/cron/atjobs
@@ -38,29 +38,36 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-#
-main(){
-#	backupTheWorld
-#	jailer
-	testOmatic
-	}
-# If error, give up
-# set -e
+###### RUN function #######
+###########################
+function main(){		###
+	backupTheWorld		###
+	jailer				###
+	testOmatic			###
+	checkCronCOMPLETE	###
+}						###
+###########################
+#------ error handling ----------
+### If error, give up			#
+#set -e							#
+#- - - - - - - - - - - - - - - -#
+### if error, do THING			#
+# makes trap global 			#
+# (works in functions)			#
+#set -o errtrace				#
+# 'exit' can be a func or cmd	#
+#trap 'exit' ERR				#
+#--------------------------------
 #### global backup var ####
-backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"
-
+backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
 ###########################################################################################
 # testing if the user has a crontab, then sends it to the filter
 ###########################################################################################
 function testOmatic(){
-	# making seemingly pointless variable
-	#crontab refuses to play nice otherwise
-	cronVar=$(mktemp) || exit 1
-	# gathering users
-	userList=$(command compgen -u)
-	userListEmpty=""
-	#------------------------------
-	# looping through the list of users
+	cronVar=$(mktemp) || exit 1		# crontab refuses to play nice otherwise
+	userList=$(command compgen -u)	# gathering users
+	userListEmpty=""				# just for tracking
+	#### looping through crontabs #############
 	for user in $userList; do
 		#sending the command output to cronVar, without sending it.. somehow.. magically..
 		command crontab -u $user -l &> "$cronVar"
@@ -76,10 +83,10 @@ function testOmatic(){
 					)"
 		fi
 	done
-	#------------------------------
+	#### results display #####################
 	printf "\n\n\n============================================================\n"
-	printf "\n\t[The users below did NOT have a crontab]\n"
 	# display users with empty crontabs
+	printf "\n\t[The users below did NOT have a crontab]\n"
 	echo "${userListEmpty}" | column
 }
 
@@ -87,23 +94,53 @@ function testOmatic(){
 ###########################################################################################
 # locks down cron use so none run (maybe)
 ###########################################################################################
-jailer(){
-	#### PART 1 ############################
-	command echo ALL > /etc/cron.deny
-	}
+function jailer(){
+	dCron="/etc/cron.deny"
+	dCronBak="/etc/cron.deny.bak"
+	aCron="/etc/cron.allow"
+	aCronBak="/etc/cron.allow.bak"
+	#### cron.deny ############################
+	if [ -e $dCron ]; then
+		#backing up original
+		command cp -a$dCron{,.bak}
+		printf "\nCopied original $dCron to [$dCronBak]"
+		command echo ALL > $dCron
+		printf "\n\nSetting cron.deny to deny ALL"
+	else
+		printf "\n\nSetting cron.deny to deny ALL"
+		command echo ALL > $dCron
+	fi
+	#### cron.allow ############################
+	if [ -e $aCron ]; then
+		command mv $aCron{,.bak}
+		printf "\nMoved original $aCron to [$aCronBak]"
+		printf "\n\n cron.allow has been removed"
+	else
+		printf "\nNo cron.allow found"
+	fi
+}
 ###########################################################################################
 # backs everything up into a box and puts a bow on it
 ###########################################################################################
-backupTheWorld(){
+function backupTheWorld(){
 	# creating the dir if it doesn't exist
 	if [[ ! -d $backupDir ]]; then
 		command mkdir -p "$backupDir"
 	fi
-	# creating backups
-	if [[ -f /etc/cron.deny ]]; then
-		command cp /etc/cron.deny $backupDir
+	# creating ccdc backups, if they exist
+	if [[ -e /etc/cron.deny ]]; then
+		command cp -a/etc/cron.deny $backupDir
+	fi
+	if [[ -e /etc/cron.allow ]]; then
+		command cp -a/etc/cron.allow $backupDir
 	fi
 	}
+###########################################################################################
+# shouts completion info
+###########################################################################################
+function checkCronCOMPLETE(){
+	printf "\nFile backups left in their dir and sent to [$backupDir]\n"
+}
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

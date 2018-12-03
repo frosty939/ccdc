@@ -5,8 +5,8 @@
 	## randomly generates passwords for all non-locked accounts
 	## locks ALL accounts except for the one you are using
 	## will require manual unlocking after infection is purged, almost certainly
-########################################################################################
-########################################################################################
+#=======================================================================================
+#=======================================================================================
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# clean this shit up
@@ -17,16 +17,36 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-#
+###### RUN function #######
+###########################
+function main(){		###
+	neo					###
+	antiFuckUp			###
+	jailer				###
+	madMixer			###
+	coldOutside			###
+}						###
+###########################
+#------ error handling ----------
+### If error, give up			#
+#set -e							#
+#- - - - - - - - - - - - - - - -#
+### if error, do THING			#
+# makes trap global 			#
+# (works in functions)			#
+#set -o errtrace				#
+# 'exit' can be a func or cmd	#
+#trap 'exit' ERR				#
+#--------------------------------
 #### global backup var ####
-backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"
+backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
 ###########################################################################################
 # If error, give up
 set -e
 ###########################################################################################
 #are you root? no? well, try again
 ###########################################################################################
-neo() {
+function neo() {
 	if [[ $EUID -ne 0  ]]; then
 	echo "you forgot to run as root again... "
 	echo "Current dir is "$(pwd)
@@ -36,7 +56,7 @@ neo() {
 ###########################################################################################
 # copies everything to the backupDir
 ###########################################################################################
-antiFuckUp(){
+function antiFuckUp(){
 	# creating the dir if it doesn't exist
 	if [ ! -d $backupDir ]; then
 		command mkdir -p "$backupDir"
@@ -50,7 +70,7 @@ antiFuckUp(){
 ###########################################################################################
 # Locks all accounts except for the one you are on and makes you change password
 ###########################################################################################
-jailer(){
+function jailer(){
 	#### Locking accounts ############################
 	users=$(cat /etc/shadow | grep -oP "^.+?(?=:)" | sed "/$(logname)/d" )
     for i in ${users[*]}; do
@@ -67,7 +87,7 @@ jailer(){
 ###########################################################################################
 # generates random passwords for all accounts
 ###########################################################################################
-madMixer(){
+function madMixer(){
 	#### checks/installs pwgen ############################
 	if ! dpkg-query -W -f='${Status}' pwgen | grep -q "ok installed"; then
 		apt install pwgen -y
@@ -85,7 +105,7 @@ madMixer(){
 ###########################################################################################
 # zips it all up
 ###########################################################################################
-coldOutside(){
+function coldOutside(){
 	#### compressing ############################
 	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
 	command rm -rf $backupDir
@@ -93,11 +113,5 @@ coldOutside(){
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-main(){
-	neo
-	antiFuckUp
-	madMixer
-	jailer
-	coldOutside
-	}
+
 main

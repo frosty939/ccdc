@@ -8,8 +8,8 @@
 #-----------------------------------------------------
 # There are multiple points where it updates/installs
 #this is just so i can keep each section by itself
-########################################################################################
-########################################################################################
+#=======================================================================================
+#=======================================================================================
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# Add option to install Cockpit instead (or as well)
@@ -24,7 +24,28 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-#
+###### RUN function #######
+###########################
+#function main(){		###
+#	function1			###
+#	function2			###
+#}						###
+###########################
+#------ error handling ----------
+### If error, give up			#
+#set -e							#
+#- - - - - - - - - - - - - - - -#
+### if error, do THING			#
+# makes trap global 			#
+# (works in functions)			#
+#set -o errtrace				#
+# 'exit' can be a func or cmd	#
+#trap 'exit' ERR				#
+#--------------------------------
+backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
+###########################################################################################
+# Installing Graylog2
+###########################################################################################
 ## POSIX option
 #stty -echo
 #printf "Password: "
@@ -73,7 +94,7 @@ sudo apt update && yes|sudo apt install elasticsearch
 	#updating config file
 		# /etc/elasticsearch/elasticsearch.yml
 		# creating a backup of the original yml, just in case.
-    sudo cp /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.$(date +"%Y-%m-%d_%H%M")
+    sudo cp -a/etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.$(date +"%Y-%m-%d_%H%M")
     sudo sed -i.bak 's/#cluster.name:.my-application/cluster.name: graylog/' /etc/elasticsearch/elasticsearch.yml
 	#enabling and having it start with the server
 		sudo systemctl daemon-reload
@@ -88,7 +109,7 @@ sudo apt update && sudo apt install graylog-server -y
 
 ###configuring graylog
 #creating a backup of he original, just in case
-  sudo cp /etc/graylog/server/server.conf /etc/graylog/server/server.conf.$(date +"%Y-%m-%d_%H%M")
+  sudo cp -a/etc/graylog/server/server.conf /etc/graylog/server/server.conf.$(date +"%Y-%m-%d_%H%M")
 #128 character random gen password
 #using the magic of sed, insert pw
 	sudo -E sed -i -e "s/password_secret =.*/password_secret = $(pwgen -s 128 1)/" /etc/graylog/server/server.conf

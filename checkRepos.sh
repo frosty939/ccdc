@@ -7,8 +7,8 @@
 	## /etc/apt/sources.list
 	## /etc/apt/sources.list.d/*
 	## /etc/cloud/templates/sources.list.tmpl
-########################################################################################
-########################################################################################
+#=======================================================================================
+#=======================================================================================
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# if/then for ubuntu/debian and different check lists
@@ -21,13 +21,32 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+###### RUN function #######
+###########################
+function main(){		###
+	neo					###
+	seeker				###
+	reaper				###
+	cleaner				###
+}						###
+###########################
+#------ error handling ----------
+### If error, give up			#
+#set -e							#
+#- - - - - - - - - - - - - - - -#
+### if error, do THING			#
+# makes trap global 			#
+# (works in functions)			#
+#set -o errtrace				#
+# 'exit' can be a func or cmd	#
+#trap 'exit' ERR				#
+#--------------------------------
 # global backup dir
-backupDir=$HOME"/ccdc_backups/$(basename "$0" | tr -d ".sh")"
-#backupDir=$HOME"/ccdc_backups/$(basename "$0" | sed 's/\.sh//')"
+backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
 ###########################################################################################
 #are you root? no? well, try again
 ###########################################################################################
-neo() {
+function neo() {
 	if [[ $EUID -ne 0  ]]; then
 		printf "\nyou forgot to run as root again... "
 		printf "\nCurrent dir is "$(pwd)"\n\n"
@@ -37,7 +56,7 @@ neo() {
 ###########################################################################################
 # compares to default repo list
 ###########################################################################################
-seeker(){
+function seeker(){
 	# defining variables
 	defList="Package files: 100 /var/lib/dpkg/status release a=now 500 http://security.ubuntu.com/ubuntu bionic-security/multiverse amd64 Packages release v=18.04,o=Ubuntu,a=bionic-security,n=bionic,l=Ubuntu,c=multiverse,b=amd64 origin security.ubuntu.com 500 http://security.ubuntu.com/ubuntu bionic-security/universe amd64 Packages release v=18.04,o=Ubuntu,a=bionic-security,n=bionic,l=Ubuntu,c=universe,b=amd64 origin security.ubuntu.com 500 http://security.ubuntu.com/ubuntu bionic-security/main amd64 Packages release v=18.04,o=Ubuntu,a=bionic-security,n=bionic,l=Ubuntu,c=main,b=amd64 origin security.ubuntu.com 100 http://archive.ubuntu.com/ubuntu bionic-backports/universe amd64 Packages release v=18.04,o=Ubuntu,a=bionic-backports,n=bionic,l=Ubuntu,c=universe,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic-updates/multiverse amd64 Packages release v=18.04,o=Ubuntu,a=bionic-updates,n=bionic,l=Ubuntu,c=multiverse,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic-updates/universe amd64 Packages release v=18.04,o=Ubuntu,a=bionic-updates,n=bionic,l=Ubuntu,c=universe,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic-updates/restricted amd64 Packages release v=18.04,o=Ubuntu,a=bionic-updates,n=bionic,l=Ubuntu,c=restricted,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic-updates/main amd64 Packages release v=18.04,o=Ubuntu,a=bionic-updates,n=bionic,l=Ubuntu,c=main,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic/multiverse amd64 Packages release v=18.04,o=Ubuntu,a=bionic,n=bionic,l=Ubuntu,c=multiverse,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic/universe amd64 Packages release v=18.04,o=Ubuntu,a=bionic,n=bionic,l=Ubuntu,c=universe,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic/restricted amd64 Packages release v=18.04,o=Ubuntu,a=bionic,n=bionic,l=Ubuntu,c=restricted,b=amd64 origin archive.ubuntu.com 500 http://archive.ubuntu.com/ubuntu bionic/main amd64 Packages release v=18.04,o=Ubuntu,a=bionic,n=bionic,l=Ubuntu,c=main,b=amd64 origin archive.ubuntu.com Pinned packages:"
 	defListPath="$backupDir""/defList.bak"
@@ -64,7 +83,7 @@ seeker(){
 ###########################################################################################
 # removes any non-standard repos/ppas
 ###########################################################################################
-reaper(){
+function reaper(){
 	#### example ############################
 	# command add-apt-repository --remove ppa:PPA_REPOSITORY_NAME/PPA
 	: #lets the function be empty
@@ -72,17 +91,12 @@ reaper(){
 ###########################################################################################
 # zips up the backup files
 ###########################################################################################
-cleaner(){
+function cleaner(){
 	command tar -zcf $HOME/ccdc_backups/$(basename "$0" | sed 's/\.sh//')--$(date +"%Y-%m-%d_%H%M").tar.gz -C $HOME/ccdc_backups $(basename "$0" | sed 's/\.sh//')
 	command rm -rf $backupDir
 	}
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-main(){
-	neo
-	seeker
-	reaper
-	cleaner
-	}
+
 main

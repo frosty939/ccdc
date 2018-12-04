@@ -1,0 +1,46 @@
+###########################################################################
+# Step: 01 #
+############
+# Usernames and passwords will be chosen out of a pool, just to keep
+#things reasonably quick. The concept is the same for any
+#username/password group.
+
+	CHOOSE A USERNAME:
+			student     |     ccdc     |     user     |     ghost
+			cartman     |     stan     |     kyle     |     kenny
+			pcprincipal |     reality  |     jack     |     kate
+			renko       |     clay     |     turner   |     kylie
+			becca       |     jo       |     allie    |     sarah
+			saryn       |     rhino    |     nidus    |     lazors
+
+
+	CHOOSE A PASSWORD:
+		123456	 |   12345      |   123456789 |   password  |   iloveyou
+		princess |   1234567    |   rockyou   |   12345678  |   abc123
+		nicole   |   daniel     |   babygirl  |   monkey    |   lovely
+		654321   |   michael    |   ashley    |   qwerty    |   111111
+		000000   |   michelle   |   tigger    |   sunshine  |   chocolate
+		soccer   |   anthony    |   friends   |   butterfly |   purple
+		jordan   |   liverpool  |   justin    |   loveme    |   fuckyou
+		football |   secret     |   andrea    |   carlos    |   jennifer
+		bubbles  |   12345678   |   superman  |   hannah    |   jessica
+		iloveu   |   password1	|   angel     |   123123	|   joshua
+
+
+###########################################################################
+# Step: 02 #
+############
+# Create a new USER with your chosen PASSWORD.
+
+
+###########################################################################
+# Step: 03 #
+############
+# ???
+#(defend yourself!)
+
+###########################################################################
+# Step: 04 #
+############
+# PROFIT!
+#(or the opposite..)

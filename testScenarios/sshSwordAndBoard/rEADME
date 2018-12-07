@@ -1,9 +1,13 @@
+
+------------- Cheat Sheet with some commands at the bottom ----------------
+
 ###########################################################################
-# Step: 01 #
-############
+### Step: 01 ###		CHOOSING LOGIN INFORMATION
+###########################################################################
 # Usernames and passwords will be chosen out of a pool, just to keep
-#things reasonably quick. The concept is the same for any
-#username/password group.
+#things reasonably quick. But not so quick you have no chance.
+#
+# Notice: Of the top 50 passwords, ONE, has an evil 'swear'
 
 	CHOOSE A USERNAME:
 			student     |     ccdc     |     user     |     ghost
@@ -26,21 +30,60 @@
 		bubbles  |   12345678   |   superman  |   hannah    |   jessica
 		iloveu   |   password1  |   angel     |   123123    |   joshua
 
+###########################################################################
+### Step: 02 ###		SETTING UP YOUR BOX
+###########################################################################
+# Create a new VM
+	OS: Ubuntu 18.04 (server)
+	Network: Bridged
+
+# (optional) If you duplicated a spun up VM
+	# Create a new USER with your chosen PASSWORD.
+	# Give said user SUDO powers.
+	# Test SUDO while logged in as the new user
 
 ###########################################################################
-# Step: 02 #
-############
-# Create a new USER with your chosen PASSWORD.
-
+### Step: 03 ###		SSH'ING INTO THE BOX
+###########################################################################
+# Connect to your VM
+	- Using another VM
+	- Using your preferred ssh client on host machine (mobaxterm, putty, etc)
+	- Using windows' ssh
 
 ###########################################################################
-# Step: 03 #
-############
+### Step: 04 ###		OPENING THE FLOODGATES
+###########################################################################
+# Let me know that you are ready. After ~20% of people are ready
+#i'll release the hounds.
+
+###########################################################################
+### Step: 05 ###		DEFEND THE MOTHERLAND
+###########################################################################
 # ???
-#(defend yourself!)
+#
+# ???
 
 ###########################################################################
-# Step: 04 #
-############
-# PROFIT!
-#(or the opposite..)
+### Step: 06 ###		THERE CAN BE ONLY ONE
+###########################################################################
+# SUCCESS!
+#(..or the opposite..)
+
+
+
+===========================================================================
+============================= CHEAT SHEET =================================
+***************Any FULL CAPS words need to be replaced*********************
+
+# Creating your User						# Granting sudo Powers
+	adduser NAME								usermod -aG sudo NAME
+		<OR>
+	useradd NAME -m -p PASSWORD
+
+
+# SSH'ing into box
+	ssh USER@TARGETIP
+	# the USER is the account on
+	#the target server
+	# the TARGETIP is the server
+	#you are trying to log IN to

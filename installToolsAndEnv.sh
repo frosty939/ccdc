@@ -24,7 +24,8 @@
 	# setup loops or something for checking/installing changes
 	# be able to reset to defaults
 	# be able to reload config before running script
-	## add installToolsAdvanced with ALL tools i use often
+	# add --help and help info
+	### add installToolsAdvanced with ALL tools i use often
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -127,8 +128,8 @@ function bashrc(){
 		)
 	if ! grep -q "$(echo "$arrowSearch" | sed -n 2p)" $rcFile; then echo "$arrowSearch" | tee -a $rcFile; fi
 
-## reminder to source .bashrc
-	printf "\n\n\tRemember you have to source your .bashrc file to apply some changes :(\n\n"
+	# should reload everything for the current shell, IF script ran by sourcing
+		command exec bash
 }
 ###########################################################################################
 #adding aliases
@@ -142,15 +143,20 @@ function addingAlias (){
 		printf "\n\nCopied Original .bash_aliases to:\n\t[$aFile.bak]\n"
 		printf "\nNow adding the following to default aliases:\n\n"
 		# inserting changes
+		#****make this a loop****
 		if ! grep -Fxq "alias cd..='cd ..'" $aFile; then echo "alias cd..='cd ..'" | tee -a $aFile; fi
+		if ! grep -Fxq "alias cd-='cd -'" $aFile; then echo "alias cd-='cd -'" | tee -a $aFile; fi
 		if ! grep -Fxq "alias dirs='dirs -v'" $aFile; then echo "alias dirs='dirs -v'" | tee -a $aFile; fi
+		if ! grep -Fxq "alias ld='ls -lSh --group-directories-first'" $aFile; then echo "alias ld='ls -lSh --group-directories-first'" | tee -a $aFile; fi
 	else
 		printf "\n\nNow adding the following to default aliases:\n\n"
 		# inserting changes
+		echo "alias cd-='cd -'" | tee -a $aFile
 		echo "alias cd..='cd ..'" | tee -a $aFile
 		echo "alias dirs='dirs -v'" | tee -a $aFile
+		echo "alias ld='ls -lSh --group-directories-first'" | tee -a $aFile
 	fi
-	# (doesn't actually work, just a reminder to find a solution) reloading bashrc
+	# should reload everything for the current shell, IF script ran by sourcing
 	command exec bash
 }
 
@@ -220,3 +226,6 @@ while [[ "$1" != "" ]]; do
 	done
 	shift
 done
+
+## reminder to run script by sourcing it
+	printf "\n\n\tIf you didn't run the script by sourcing it    [ .  script.sh ]\n\tyou have to source your .bashrc file to apply some changes :(\n\n"

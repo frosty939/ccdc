@@ -18,6 +18,7 @@
 	# get list of ECDSA key fingerprints for your machines
 	# change ssh port
 	# check /etc/default/ssh
+	# remove, or rename, any and all .ssh/authorized_keys files
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

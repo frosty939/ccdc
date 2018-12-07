@@ -45,6 +45,7 @@
 	# deluser						/etc/deluser.conf
 	#								/etc/default/*
 	# keyboard						/etc/default/keyboard
+	# login defs					/etc/login.defs
 	#### bash completion
 	#								/usr/share/bash-completion/*
 	#### HOME dirs

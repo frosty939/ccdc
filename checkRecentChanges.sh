@@ -10,6 +10,9 @@
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# columns, for readability
+	# find the last bulk change to the system, base that as zero
+	#### PATH
+	# check all the PATH locations for create and modified dates
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -39,16 +42,16 @@ backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
 ###########################################################################################
 function function1(){
 	#### PART 1 ############################
+	#--- if you dont specify a dir, it assumes ./
 	# files
 	find -type f -mtime -30 -exec ls -l {} \; > last30days.txt
 	# directories
 	find -type d -mtime -30 -exec ls -l {} \; > lastd30days.txt
 	### ignoring .git crap
-	# files
-	find -type f -mtime -30 -exec ls -l {} \; | sed '/\.git/d' > last30days.txt
-	# directories
-	find -type d -mtime -30 -exec ls -l {} \; | sed '/\.git/d' > lastd30days.txt
-	}
+	find -mtime -30 -exec ls -l {} \; | sed '/\.git/d' > last30days.txt
+	### things without a user
+	find / -nouser -exec ls -l {} \; > unownedFiles.txt
+}
 ###########################################################################################
 #FUNCTION2 description
 ###########################################################################################

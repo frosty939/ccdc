@@ -13,8 +13,13 @@
 	# add to /etc/modprobe.d/blacklist.conf
 	# 	blacklist CONFIG_CRYPTO_SPECK
 	#### lock down how much a user can spawn (fork bomb protection and what not)
-	# 							 /etc/security/limits.conf
 	#
+	#### /etc/security stuff
+	#										/etc/security/access.conf
+	# n of processes, open files, etc	 	/etc/security/limits.conf
+	#										/etc/security/
+	#----------------------------------------------------------------
+	# setup access limits
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

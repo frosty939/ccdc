@@ -94,7 +94,7 @@ sudo apt update && yes|sudo apt install elasticsearch
 	#updating config file
 		# /etc/elasticsearch/elasticsearch.yml
 		# creating a backup of the original yml, just in case.
-    sudo cp -a/etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.$(date +"%Y-%m-%d_%H%M")
+    sudo cp -a /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.$(date +"%Y-%m-%d_%H%M")
     sudo sed -i.bak 's/#cluster.name:.my-application/cluster.name: graylog/' /etc/elasticsearch/elasticsearch.yml
 	#enabling and having it start with the server
 		sudo systemctl daemon-reload
@@ -109,7 +109,7 @@ sudo apt update && sudo apt install graylog-server -y
 
 ###configuring graylog
 #creating a backup of he original, just in case
-  sudo cp -a/etc/graylog/server/server.conf /etc/graylog/server/server.conf.$(date +"%Y-%m-%d_%H%M")
+  sudo cp -a /etc/graylog/server/server.conf /etc/graylog/server/server.conf.$(date +"%Y-%m-%d_%H%M")
 #128 character random gen password
 #using the magic of sed, insert pw
 	sudo -E sed -i -e "s/password_secret =.*/password_secret = $(pwgen -s 128 1)/" /etc/graylog/server/server.conf

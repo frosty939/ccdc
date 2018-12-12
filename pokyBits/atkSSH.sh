@@ -160,6 +160,9 @@ function bones(){
 # banging down the door
 ###########################################################################################
 function brute(){
+	## more password lists found here
+	### https://github.com/danielmiessler/SecLists/tree/master/Passwords
+	## lots more
 	# tmp files
 		#********add remove all tmp files at the end **************************************************
 		#make sure these are all tmp files

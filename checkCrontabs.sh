@@ -102,7 +102,7 @@ function jailer(){
 	#### cron.deny ############################
 	if [ -e $dCron ]; then
 		#backing up original
-		command cp -a$dCron{,.bak}
+		command cp -a $dCron{,.bak}
 		printf "\nCopied original $dCron to [$dCronBak]"
 		command echo ALL > $dCron
 		printf "\n\nSetting cron.deny to deny ALL"
@@ -129,10 +129,10 @@ function backupTheWorld(){
 	fi
 	# creating ccdc backups, if they exist
 	if [[ -e /etc/cron.deny ]]; then
-		command cp -a/etc/cron.deny $backupDir
+		command cp -a /etc/cron.deny $backupDir
 	fi
 	if [[ -e /etc/cron.allow ]]; then
-		command cp -a/etc/cron.allow $backupDir
+		command cp -a /etc/cron.allow $backupDir
 	fi
 	}
 ###########################################################################################

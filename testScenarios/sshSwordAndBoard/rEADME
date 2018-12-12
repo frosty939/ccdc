@@ -39,10 +39,18 @@
 		usermod -aG sudo USER
 
 	# Test SUDO while logged in as the new user
-		id USER |grep sudo
+		id USER | grep sudo
+
 
 ###########################################################################
-### Step: 03 ###		SSH'ING INTO THE BOX
+### Step: 04 ###		Take a Snapshot
+###########################################################################
+	# CREATE A SNAPSHOT
+	# CREATE A SNAPSHOT
+	# CREATE A SNAPSHOT
+
+###########################################################################
+### Step: 05 ###		SSH'ING INTO THE BOX
 ###########################################################################
 # Connect to your VM
 	- Using another VM
@@ -53,20 +61,20 @@
 #at least not for the target machine.
 
 ###########################################################################
-### Step: 04 ###		OPENING THE FLOODGATES
+### Step: 06 ###		OPENING THE FLOODGATES
 ###########################################################################
 # Let me know that you are ready. After ~50% of people are ready
 #i'll release the hounds.
 
 ###########################################################################
-### Step: 05 ###		DEFEND THE MOTHERLAND
+### Step: 07 ###		DEFEND THE MOTHERLAND
 ###########################################################################
 # ???
 #
 # ???
 
 ###########################################################################
-### Step: 06 ###		THERE CAN BE ONLY ONE
+### Step: 08 ###		THERE CAN BE ONLY ONE
 ###########################################################################
 # SUCCESS!
 #(..or the opposite..)

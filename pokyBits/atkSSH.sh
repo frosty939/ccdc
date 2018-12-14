@@ -300,7 +300,7 @@ function b52(){
                 printf "\n..is something supposed to happen now?\n"
         else
                 /bin/rm -rf $argsLSrm
-                printf "\n\e[0;5;35m*\e[mpoof\e[0;5;35m*\e[m goes [${argsLSrm}]\n"
+                printf "\n\e[0;95m*poof*\e[m goes [${argsLSrm}]\n"
                 #could just as easily `shred` to be meaner
         fi
 	else

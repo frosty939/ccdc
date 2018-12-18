@@ -42,7 +42,8 @@
 # 'exit' can be a func or cmd	#
 #trap 'exit' ERR				#
 #--------------------------------
-backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
+#backupDir="$HOME""/ccdc_backups/$(basename -s.sh "$0")"
+backupDir="$HOME""/ccdc_backups/$(echo $BASH_SOURCE | sed 's|.sh$||' | rev | cut -d\/ -f1 | rev)"
 ###########################################################################################
 # Installing Graylog2
 ###########################################################################################

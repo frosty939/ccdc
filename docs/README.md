@@ -25,7 +25,7 @@
 		Box Assignments
 		<tr>
       <td align="center">
-        <a href="https://docs.google.com/document/d/1YkQXj60AR4s7KLYcbZ8ur4Sd8Hkp31v4vk6iN-ACICE">
+        <a href="https://docs.google.com/spreadsheets/d/1qehcr-z5UUX4_o3SxmbtM5GyRGJjXqPVMIITtHcLucs">
         CCDC 2019
         </a>
       </td>

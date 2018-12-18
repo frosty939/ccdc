@@ -10,12 +10,13 @@
 	#
 	#*************** NEED TO DO/ADD ***********************
 	## hosts file
-	# /etc/hosts
-	# /etc/hosts.conf
+	#							/etc/hosts
+	#							/etc/hosts.conf
 	## routes
 	# route -n
 	## dns
-	# cat /etc/resolv.conf
+	#							/etc/resolv.conf
+	#							/etc/nsswitch.conf
 	# nslookup f
 	## ubuntu 18.04
 	# systemd-resolve --status

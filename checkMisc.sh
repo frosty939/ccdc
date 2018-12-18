@@ -29,6 +29,7 @@
 	# check ufw script				vim /lib/ufw/ufw-init
 	#### network stuff
 	# check resolv file				/lib/systemd/network/*
+	# hosts file					/etc/hosts
 	#### drivers
 	# dirty confs and such			/etc/modules
 	#								/etc/modprobe.d/*.conf
@@ -55,6 +56,9 @@
 	#### keyboard shortcuts
 	# 								/etc/inputrc
 	# (?)							~/.inputrc
+	#### grub
+	# check for hidden partitions
+	#or weird boot configs
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////

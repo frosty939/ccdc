@@ -1,6 +1,6 @@
 # CCDC Stuff
 
-<table style="width:50%">
+<table style="width:50%; display: inline-block">
 	<th colspan="2" align="center">
 		Tips, Tricks, and Checklists
 		<tr>
@@ -20,12 +20,12 @@
       </td>
 		</tr>
 	</th>	
-</table>
+</table><table style="width:50%; display: inline-block">
   	<th colspan="2" align="center">
 		Box Assignments
 		<tr>
       <td align="center">
-        <a href="https://docs.google.com/spreadsheets/d/1qehcr-z5UUX4_o3SxmbtM5GyRGJjXqPVMIITtHcLucs">
+        <a href="https://docs.google.com/document/d/1YkQXj60AR4s7KLYcbZ8ur4Sd8Hkp31v4vk6iN-ACICE">
         CCDC 2019
         </a>
       </td>

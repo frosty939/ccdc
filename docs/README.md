@@ -1,6 +1,6 @@
 # CCDC Stuff
 
-<p float="left"><table style="width:50%">
+<table style="width:50%">
 	<th colspan="2" align="center">
 		Tips, Tricks, and Checklists
 		<tr>
@@ -20,7 +20,7 @@
       </td>
 		</tr>
 	</th>	
-</table></p><p float="right"><table style="width:50%">
+</table>
   	<th colspan="2" align="center">
 		Box Assignments
 		<tr>
@@ -31,7 +31,7 @@
       </td>
 		</tr>
 	</th>	
-</table></p>
+</table>
 
 ### [CCDC Box Assignments](https://docs.google.com/spreadsheets/d/1qehcr-z5UUX4_o3SxmbtM5GyRGJjXqPVMIITtHcLucs)
 

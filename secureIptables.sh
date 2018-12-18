@@ -24,6 +24,7 @@
 	# find gateway and put it where it needs to be for allowing proper ntp and dns
 	# deal wiht fuckups caused by launching with sh instead of bash
 	# have the first backup of each file be specially named, then tested for existence
+	# consolidate rules
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -141,6 +142,12 @@ function whatWeDoin() {
 			:INPUT DROP [0:0]
 			## allows established connections
 			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+			## drop null packets
+			#-A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+			## drop syn-flood packets
+			#-A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+			## drop xmas tree packets
+			#-A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 			### SSH Stuff ###
 			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
 			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
@@ -178,6 +185,14 @@ function whatWeDoin() {
 			COMMIT
 			*filter
 			:INPUT DROP [0:0]
+			## allows established connections
+			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+			## drop null packets
+			#-A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+			## drop syn-flood packets
+			#-A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+			## drop xmas tree packets
+			#-A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 			### SSH Stuff ###
 			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
 			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
@@ -189,8 +204,6 @@ function whatWeDoin() {
 			## If an SSH connection has made it this far, ACCEPT it.
 			-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
 			######
-			## allows established connections
-			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 			:FORWARD DROP [0:0]
 			:OUTPUT ACCEPT [0:0]
 			COMMIT
@@ -217,6 +230,12 @@ function whatWeDoin() {
 			:INPUT DROP [0:0]
 			## allows established connections
 			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+			## drop null packets
+			#-A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+			## drop syn-flood packets
+			#-A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+			## drop xmas tree packets
+			#-A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 			### SSH Stuff
 			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
 			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
@@ -259,6 +278,14 @@ function whatWeDoin() {
 			COMMIT
 			*filter
 			:INPUT DROP [0:0]
+			## allows established connections
+			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+			## drop null packets
+			#-A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+			## drop syn-flood packets
+			#-A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+			## drop xmas tree packets
+			#-A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 			### SSH Stuff
 			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
 			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
@@ -278,8 +305,6 @@ function whatWeDoin() {
 			-A INPUT -p tcp -m tcp --dport 110 -j ACCEPT
 			## allows ping replies
 			-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
-			## allows established connections
-			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 			## logs... something?
 			-A INPUT -m limit --limit 5/min -j LOG --log-prefix "FART-OVERLOAD " --log-level 7
 			:FORWARD DROP [0:0]
@@ -310,6 +335,14 @@ function whatWeDoin() {
 			COMMIT
 			*filter
 			:INPUT DROP [0:0]
+			## allows established connections
+			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+			## drop null packets
+			#-A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+			## drop syn-flood packets
+			#-A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+			## drop xmas tree packets
+			#-A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 			### SSH Stuff
 			## TCP packets are going to come in, that will attempt to establish an SSH connection.  Mark them as SSH.  Pay attention to the source of the packet.
 			-A INPUT -p tcp -m tcp --dport 22 -m state --state NEW -m recent --set --name SSH --rsource
@@ -323,8 +356,6 @@ function whatWeDoin() {
 			#######
 			## allows ping replies
 			-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
-			## allows established connections
-			-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 			## logs... something?
 			-A INPUT -m limit --limit 5/min -j LOG --log-prefix "FART-OVERLOAD " --log-level 7
 			:FORWARD DROP [0:0]

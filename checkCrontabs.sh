@@ -12,9 +12,9 @@
 	# check atjobs				cat /var/spool/cron/atjobs
 	# check timers				systemctl list-timers --all
 	# check 'at' jobs			atq
-	####
-	# this one should have		/var/spool/cron/
-	#everything
+	#### everything
+	# ,this one should have		/var/spool/cron/
+	# 							find /var/spool/cron -type f -exec ls -l {} \; -exec cat {} ;\
 	#### cronjobs
 	#							/etc/default/cron
 	#							/etc/init.d/cron
@@ -41,6 +41,7 @@
 ###### RUN function #######
 ###########################
 function main(){		###
+	neo					###
 	backupTheWorld		###
 	jailer				###
 	testOmatic			###
@@ -59,7 +60,18 @@ function main(){		###
 #trap 'exit' ERR				#
 #--------------------------------
 #### global backup var ####
-backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
+#backupDir="$HOME""/ccdc_backups/$(basename -s.sh "$0")"
+backupDir="$HOME""/ccdc_backups/$(echo $BASH_SOURCE | sed 's|.sh$||' | rev | cut -d\/ -f1 | rev)"
+###########################################################################################
+#are you root? no? well, try again
+###########################################################################################
+function neo(){
+	if [[ $EUID -ne 0  ]]; then
+		printf "\nyou forgot to run as root again... "
+		printf "\n\tCurrent dir is [$(pwd)]\n\n"
+		exit 1
+	fi
+}
 ###########################################################################################
 # testing if the user has a crontab, then sends it to the filter
 ###########################################################################################
@@ -105,18 +117,18 @@ function jailer(){
 		command cp -a $dCron{,.bak}
 		printf "\nCopied original $dCron to [$dCronBak]"
 		command echo ALL > $dCron
-		printf "\n\nSetting cron.deny to deny ALL"
+		printf "\n\tSetting cron.deny to deny ALL"
 	else
-		printf "\n\nSetting cron.deny to deny ALL"
+		printf "\n\tSetting cron.deny to deny ALL"
 		command echo ALL > $dCron
 	fi
 	#### cron.allow ############################
 	if [ -e $aCron ]; then
 		command mv $aCron{,.bak}
 		printf "\nMoved original $aCron to [$aCronBak]"
-		printf "\n\n cron.allow has been removed"
+		printf "\n\tcron.allow has been removed"
 	else
-		printf "\nNo cron.allow found"
+		printf "\n\tNo cron.allow found"
 	fi
 }
 ###########################################################################################

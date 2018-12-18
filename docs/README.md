@@ -3,6 +3,7 @@
 <table style="width:50%; display: inline-block">
 	<th colspan="2" align="center">
 		Tips, Tricks, and Checklists
+	</th>	
 		<tr>
       <td align="center">
         <img src="https://www.redhat.com/favicon.ico" hspace="10" height="12" width="12"></img>
@@ -19,10 +20,10 @@
         <img src="https://assets.ubuntu.com/v1/cb22ba5d-favicon-16x16.png" hspace="10" height=12 width=12></img>
       </td>
 		</tr>
-	</th>	
 </table><table style="width:50%; display: inline-block">
   	<th colspan="2" align="center">
 		Box Assignments
+	</th>
 		<tr>
       <td align="center">
         <a href="https://docs.google.com/document/d/1YkQXj60AR4s7KLYcbZ8ur4Sd8Hkp31v4vk6iN-ACICE">
@@ -30,7 +31,6 @@
         </a>
       </td>
 		</tr>
-	</th>	
 </table>
 
 ### [CCDC Box Assignments](https://docs.google.com/spreadsheets/d/1qehcr-z5UUX4_o3SxmbtM5GyRGJjXqPVMIITtHcLucs)

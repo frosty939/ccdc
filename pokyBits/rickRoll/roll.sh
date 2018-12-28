@@ -2,7 +2,7 @@
 # Rick Astley in your Terminal.
 # By Serene Han and Justine Tunney <3
 version='1.1'
-rick="$(hostname -I | tr -d ' '):8000"
+rick="192.168.86.28:8000"
 video="$rick/astley80.full.bz2"
 # TODO: I'll let someone with mac or windows machine send a pull request
 # to get gsm going again :)

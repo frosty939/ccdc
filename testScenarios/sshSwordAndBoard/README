@@ -58,15 +58,16 @@
 
 ## Enabling Network ##
 	#edit /etc/sysconfig/network-scripts/ifcfg-eth0     (or whatever your int is)
+	#to have ONLY these 3 things, remember that 'eth0' might be different for you
+		DEVICE="eth0"
 		BOOTPROTO="dhcp"
 		ONBOOT="yes"
 
-	#re-initializing interface
-		ifdown eth0
-		ifup eth0
-
-	# (optional) if it bitches at you about mac addresses, delete the line with
-		HWADDR:
+	#reboot to make sure network stuff applies correctly
+		init 6
+		#then after reboot
+			ip a
+			
 
 ---------------------------------------------------------
 

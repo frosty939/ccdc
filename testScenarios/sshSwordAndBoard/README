@@ -31,9 +31,21 @@
 ## Create a new VM ##
 	OS: CentOS 6.0 (server)
 	Network01: NAT
-	Network02: Bridged
 	User: From Above
 	Password: From Above
+
+
+## Enabling Internet ##
+	#edit your FIRST interface			(/etc/sysconfig/network-scripts/ifcfg-eth0)
+	#to have ONLY these 3 things, remember that 'eth0' might be different for you
+		DEVICE="eth0"
+		BOOTPROTO="dhcp"
+		ONBOOT="yes"
+
+	#reboot to make sure network stuff applies correctly AND will survive the reboot
+		init 6
+		#then after reboot
+			ip a
 
 
 ## Installing "sudo" (if it doesn't exist) ##
@@ -48,7 +60,7 @@
 		visudo
 			#uncomment the line starting with '# %wheel'
 			| ## Allows people in group wheel to run all commands
- 			| # %wheel ALL=(ALL)       ALL
+ 			|  %wheel ALL=(ALL)       ALL
 
 		# test that sudo works #
 			#switch to user
@@ -57,23 +69,15 @@
 				sudo visudo
 
 
-## Enabling Network ##
-	#edit your FIRST interface			(/etc/sysconfig/network-scripts/ifcfg-eth0)
-	#to have ONLY these 3 things, remember that 'eth0' might be different for you
-		DEVICE="eth0"
-		BOOTPROTO="dhcp"
-		ONBOOT="yes"
-
-	#edit your SECOND interface			(/etc/sysconfig/network-scripts/ifcfg-eth1)
-	#to have ONLY these 3 things, remember that 'eth1' might be different for you
-		DEVICE="eth1"
-		BOOTPROTO="dhcp"
-		ONBOOT="yes"
+## Enabling NETWORK ##
+	# In VM Settings #
+	#change the interface from NAT to Bridged
 
 	#reboot to make sure network stuff applies correctly AND will survive the reboot
 		init 6
 		#then after reboot
 			ip a
+			#you should see your IP on the 172.16.240.x/24 network
 
 
 ---------------------------------------------------------

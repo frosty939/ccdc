@@ -79,7 +79,9 @@ function bones() {
 	targetShadows="./shadows"
 	sshKey="/root/.ssh/id_rsa"
 	rickPath='./rickRoll/*'
+	rickScript='./rickRoll/roll.sh'
 	rickHost="$(hostname -I | tr -d ' '):80"
+	rickSourceIP="$(hostname -I | tr -d ' ')"
 		#rickHost="$(hostname -I | tr -d ' '):8000"
 # stuff for making sure the http server is alive and ready
 	CHECK_rickServer="$(netstat -tulnap | grep -q 80.*apache; echo $?)"
@@ -90,6 +92,10 @@ function bones() {
 		echo $CHECK_rickFiles
 	}
 #### Gathering Info ############################
+	### setting rickRoll IP ###
+		read -p "What are we setting the rickRoll IP to [$rickSourceIP]: " rickSourceIP
+		: ${rickSourceIP:=$(hostname -I | tr -d ' ')}
+		command sed -i "s/^rick=.*/rick=\"$rickSourceIP\"" $rickScript
 	### ssh key ###
 		if [ ! -e $sshKey ]; then
 			ssh-keygen -f $sshKey -t rsa -N ''

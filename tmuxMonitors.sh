@@ -48,7 +48,19 @@ backupDir="$HOME""/ccdc_backups/$(basename "$0" | sed 's/\.sh$//')"
 #FUNCTION1 description
 ###########################################################################################
 function1(){
-	#### PART 1 ############################
+	#..... EXAMPLES .........................................
+	# creates a new session and runs 'top'
+		tmux new-session -d 'top'
+	# splits ABOVE window Vertically and runs 'htop'
+		tmux split-window -v 'ipython'
+	# splits ABOVE session Horizontally
+		tmux split-window -h
+	# creates a new window running 'watch netstat -tulnpa'
+	#(which shows up before the ABOVE window)
+		tmux new-window 'watch netstat -tulnpa'
+	# forces color256 assumption, then attaches and detaches the session?
+	#(not sure why the -d is there..)
+		tmux -2 attach-session -d
 	}
 ###########################################################################################
 #FUNCTION2 description

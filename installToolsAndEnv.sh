@@ -56,7 +56,7 @@ sshFile="/etc/ssh/ssh_config"
 ###########################################################################################
 function installToolsBasic(){
 	sudo apt update && sudo apt install -y "autojump htop atop inxi vim net-tools
-											iftop nload vnstat nmon"
+											iftop nload vnstat nmon netdiscover"
 	# checking if autojump is already conf'd for the passed user
 	function existAutojump()
 		{

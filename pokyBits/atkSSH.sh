@@ -24,6 +24,8 @@
 	# setup params
 	# correct for pre-infected
 	# fix weird fuckup if SIGTERM during process
+	# fix the file check for list creation
+	# improve readability of list creation
 	#### multiple levels of attack
 	# masking attacking IP
 	# obfuscating code
@@ -89,7 +91,7 @@ function meat(){
 		done
 	# installing missing apps
 		if [ ! -z "$installing" ]; then
-			command yes | apt install $installing
+			command yes | apt install $installing || exit 1
 			printf "\n\n\tInstalled:\n\t\t[$installing ]\n\n"
 		else
 			printf "\n--------------------------------------------------------------------\n"
@@ -104,18 +106,22 @@ function bones(){
 	pwListBasic="/tmp/pwListBasic"
 	pwListFull="/usr/share/wordlists/rockyou.txt"
 	pwListScenario01="/tmp/pwListScenario01"
-		printf "P@ssw0rd\npassword\ntoor\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nqwe\nQWE\nCCDC\nccdc\n" > $pwListBasic
-		#printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n123123\nfootball\nsecret\nandrea\ncarlos\njennifer\njoshua\nbubbles\n1234567890\nsuperman\nhannah\n" > $pwListScenario01
-		printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n" > $pwListScenario01
-		#pwListFull
+		if [ ! -s $pwListBasic ] || [ ! -s $pwListFull ] || [ ! -s $pwListScenario01 ]; then
+			printf "P@ssw0rd\npassword\ntoor\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nqwe\nQWE\nCCDC\nccdc\n" > $pwListBasic
+			#printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n123123\nfootball\nsecret\nandrea\ncarlos\njennifer\njoshua\nbubbles\n1234567890\nsuperman\nhannah\n" > $pwListScenario01
+			printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n" > $pwListScenario01
+			#pwListFull
+		fi
 	# USERNAME LISTS
 	userListBasic="/tmp/userListBasic"
 	userListUnix="/usr/share/wordlists/metasploit/unix_users.txt"
 	userListStudents="/tmp/userListStudents"
 	userListScenario01="/tmp/userListScenario01"
-		printf "root\nstudent\nccdc\nname" > $userListBasic
-		printf "root\nuser\nstudent\nadam\nalex\nalexander\nandrew\nangel\nanreah\narmagetronad\nbrad\ncanyon\ncasey\ncharles\nchris\nclay\ndale\ndavid\ndoug\nevan\ngeoffrey\nhilary\nkip\nleah\nnolan\nnolan01m\nsamuel\nshane\nsmith\ntori\ntyler\nyianni\n" > $userListStudents
-		printf "student\nccdc\nuser\nghost\ncartman\nstan\nkyle\nkenny\npcprincipal\nreality\njack\nkate\nsaryn\nrhino\nnidus\nlazors\n" > $userListScenario01
+		if [ ! -s $userListBasic ] || [ ! -s $userListStudents ] || [ ! -s $userListScenario01 ]; then
+			printf "root\nstudent\nccdc\nname" > $userListBasic
+			printf "root\nuser\nstudent\nadam\nalex\nalexander\nandrew\nangel\nanreah\narmagetronad\nbrad\ncanyon\ncasey\ncharles\nchris\nclay\ndale\ndavid\ndoug\nevan\ngeoffrey\nhilary\nkip\nleah\nnolan\nnolan01m\nsamuel\nshane\nsmith\ntori\ntyler\nyianni\n" > $userListStudents
+			printf "student\nccdc\nuser\nghost\ncartman\nstan\nkyle\nkenny\npcprincipal\nreality\njack\nkate\nsaryn\nrhino\nnidus\nlazors\n" > $userListScenario01
+		fi
 # where important lists are stored
 	printf "\n\tUsername List:\n"
 	printf "\n\t\t["$userListUnix"]\n\n"

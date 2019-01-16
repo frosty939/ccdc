@@ -37,7 +37,8 @@
 	# be able to reset to defaults
 	# be able to reload config before running script
 	# add --help and help info
-	### add installToolsAdvanced with ALL tools i use often
+	### add installToolsAdvanced ###
+	# with ALL tools i use often (broken into groups)
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +73,8 @@ sshFile="/etc/ssh/ssh_config"
 function installToolsBasic(){
 	sudo apt update && sudo apt install -y "autojump htop atop inxi vim net-tools
 											iftop nload vnstat nmon netdiscover finger
-											logwatch git curl shellcheck"
+											logwatch git curl wget shellcheck lshw
+											iotop mc ncdu gdebi-core"
 	# checking if autojump is already conf'd for the passed user
 	function existAutojump()
 		{

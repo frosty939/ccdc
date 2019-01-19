@@ -375,7 +375,7 @@ function meat(){
 		done
 	# installing missing apps
 		if [ "$installing" != "" ]; then
-			command yes | apt install $installing || printf "\n\n[\e[0;31m FAILED \e[0;m] Installing Packages. Dpkg Likely Busy\n\n"; exit 1
+			command yes | apt install $installing || (printf "\n\n[\e[0;31m FAILED \e[0;m] Installing Packages. Dpkg Likely Busy\n\n"; exit 1)
 			printf "\n\n\tInstalled:\n\t\t[$installing ]\n\n"
 		else
 			printf "\n--------------------------------------------------------------------"

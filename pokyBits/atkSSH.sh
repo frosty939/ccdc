@@ -123,7 +123,7 @@ function hulk(){
 
 		#fi
 		#***** if not success with basic, then do full ****************************************
-		command hydra -I -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -vV -t 4 -M "$liveHosts" ssh
+		command hydra -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -vV -t 4 -M "$liveHosts" ssh
 		command sed -i '/^#/d' "$hydraOutput"
 		if [ -s $hydraOutput ]; then
 			printf "\nCleaning up output\n"
@@ -156,7 +156,7 @@ function mouse(){
 	#**************************************************************************************
 	#**** if $2, use instead of userListScenario01 ****************************************
 	#**** if $3, use instead of pwListScenario01 ******************************************
-		command hydra -I -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -vV -t 4 $1 ssh
+		command hydra -o "$hydraOutput" -L "$userListScenario01" -P "$pwListScenario01" -vV -t 4 $1 ssh
 		command sed -i '/^#/d' "$hydraOutput"
 		if [ -s $hydraOutput ]; then
 			printf "\nCleaning up output\n"

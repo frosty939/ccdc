@@ -48,7 +48,7 @@
 
 	#edit your SECOND interface			(/etc/sysconfig/network-scripts/ifcfg-eth1)
 	#to have ONLY these 4 things, remember that 'eth1' might be different for you
-		DEVICE="eth0"
+		DEVICE="eth1"
 		BOOTPROTO="static"
 		ONBOOT="yes"
 		IPADDR=172.16.240.x

@@ -63,15 +63,17 @@
 ###############################
 function main(){			###
 	neo						###
-if [[ "$1" == "" ]]; then 	### SETUP
+if [[ "$1" == "" ]]; then 	### CRACKING ALL
 	meat					###
 	bones					###
 	hulk					###
 fi 							###
-if [[ "$1" == "a" ]]; then	### ATTACKING ALL
+if [[ "$1" == "a" ]]; then	### INFECTING ALL
 	b52						###
 fi 							###
-if [[ "$1" != "" ]]; then	###
+if [[ "$1" != "" ]]; then	### CRACKING ONE
+	meat					###
+	bones					###
 	mouse "$@"				###
 fi 							###
 #	spectre					### borked

@@ -357,7 +357,7 @@ payload "$@"
 function meat(){
 	commands="sshpass net-tools apache2"
 	installing=""
-	updated=1
+	updated=0
 	scriptPath="$BASH_SOURCE"
 #### Updating Repos ############################
 		if [ $updated == 0 ]; then
@@ -375,7 +375,7 @@ function meat(){
 		done
 	# installing missing apps
 		if [ "$installing" != "" ]; then
-			command yes | apt install $installing
+			command yes | apt install $installing || printf "\n\n[\e[0;31m FAILED \e[0;m] Installing Packages. Dpkg Likely Busy\n\n"; exit 1
 			printf "\n\n\tInstalled:\n\t\t[$installing ]\n\n"
 		else
 			printf "\n--------------------------------------------------------------------"

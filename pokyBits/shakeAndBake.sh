@@ -65,7 +65,7 @@ elif [[ $1 == 'carson' ]]; then		### CARSON's
 elif [[ $1 == 'santa' ]]; then		### HO HO HO
 	export -f santaClause			###
 	timeout 3 bash -c santaClause	###
-elif [[ $1 != '' ]]; then			### EVERYONE ELSE
+elif [[ $1 != '' ]]; then			### EVERYONE ELSE (waiting on responses before i waste more time)
 	neo								###
 	carson							###
 else								###

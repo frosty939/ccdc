@@ -23,15 +23,21 @@
 </table>
 <table style="width:50%; display: inline-block">
 	<th colspan="2" align="center">
-		Box Assignments
+		CCDC Event
 	</th>
 	<tr>
 		<td align="center">
 			<a href="https://docs.google.com/spreadsheets/d/1qehcr-z5UUX4_o3SxmbtM5GyRGJjXqPVMIITtHcLucs">
-			CCDC 2019
+			Box Assignments (2019)
+			</a>
+		</td>
+		<td align="center">
+			<a href="https://docs.google.com/document/d/11sx-cXRJJezIBISARB1U_ArjBxWZ4e9UZl6FHYWTmLE/edit?usp=sharing">
+			Fundamentals (2019)
 			</a>
 		</td>
 	</tr>
+	
 </table>
 
 ---

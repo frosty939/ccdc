@@ -32,8 +32,26 @@
 			</a>
 		</td>
 		<td align="center">
-			<a href="https://docs.google.com/document/d/11sx-cXRJJezIBISARB1U_ArjBxWZ4e9UZl6FHYWTmLE/edit?usp=sharing">
+			<a href="https://docs.google.com/document/d/11sx-cXRJJezIBISARB1U_ArjBxWZ4e9UZl6FHYWTmLE">
 			Fundamentals (2019)
+			</a>
+		</td>
+	</tr>
+	
+</table>
+<table style="width:50%; display: inline-block">
+	<th colspan="2" align="center">
+		How To's
+	</th>
+	<tr>
+		<td align="center">
+			<a href="https://docs.google.com/document/d/1NL-SGj7-67IxfBYOCrEdMwD7ZK0YZG3FfTGg9NReGVU">
+			Splunk (CentOS 6)
+			</a>
+		</td>
+		<td align="center">
+			<a href="https://docs.google.com/document/d/11b5CYBTm4d0Urpi7CnDx-kcfcL0PqrDaLZiyBy44zyw">
+			Bind9 (Ubuntu 12.04)
 			</a>
 		</td>
 	</tr>

